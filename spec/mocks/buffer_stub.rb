@@ -29,7 +29,7 @@ class BufferStub
   # val<String>::
   #   The new value of the line.
   def []=(pos, val)
-    @contents[pos - 1, val]
+    @contents[pos - 1] = val
   end
 
   # Returns the current line of the buffer
@@ -39,5 +39,43 @@ class BufferStub
   #   The current line is returned as String.
   def line
     self[@current_line]
+  end
+
+  # Modifies the current line
+  #
+  # ==== Parameters
+  # val<String>::
+  #   The new value for the current line
+  def line=(val)
+    self[@current_line] = val
+  end
+
+  # Appends a new line in the given position with the given value
+  #
+  # ==== Parameters
+  # num<Fixnum>::
+  #   Indicates the line number, after which the buffer should be appended
+  # str<String>::
+  #   Indicates the new value of the line
+  def append(num, str)
+    @contents.insert(num, str)
+  end
+
+  # Returns the current line number
+  #
+  # ==== Returns
+  # Fixnum::
+  #   The current line number is returned
+  def line_number
+    @current_line
+  end
+
+  # Returns the size of all lines
+  #
+  # ==== Returns
+  # Fixnum::
+  #   The count of the lines is returned.
+  def count
+    @contents.size
   end
 end

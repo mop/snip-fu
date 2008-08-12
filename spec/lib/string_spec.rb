@@ -1,5 +1,21 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
+describe String, 'start_tag-method' do
+  before(:each) do
+    String.send(:include, GeditSnippetMatcher)
+  end
+
+  it 'should extract the start-tag correctly on extended-snippets' do
+    string = "${4:asdf}"
+    string.start_tag.should eql("${4:")
+  end
+
+  it 'should extract the start-tag correctly on regular-snippets' do
+    string = "${4}"
+    string.start_tag.should eql("${4")
+  end
+end
+
 describe String, 'without_tags-method' do
   before(:each) do
     String.send(:include, GeditSnippetMatcher)
@@ -18,6 +34,19 @@ describe String, 'without_tags-method' do
   it 'should remove the empty tags correctly' do
     string = "${4}"
     string.without_tags.should eql("")
+  end
+
+  it 'should remove a very long string correctly' do
+    string = "${5:, { 
+        :from =&gt; ${10:'${11:from@acme.com}'},
+        :to =&gt; ${12:'${13:some@user.com}'},
+        :subject =&gt; ${15:'${16:Email subject}'}
+}${20:, { :${25:user} =&gt; ${26:@user} }}}"
+    string.without_tags.should eql(", { 
+        :from =&gt; ${10:'${11:from@acme.com}'},
+        :to =&gt; ${12:'${13:some@user.com}'},
+        :subject =&gt; ${15:'${16:Email subject}'}
+}${20:, { :${25:user} =&gt; ${26:@user} }}")
   end
 end
 
@@ -103,25 +132,42 @@ describe String, 'bugfixes' do
     String.send(:include, GeditSnippetMatcher)
   end
 
-  it 'should match send_mail' do
-    str = "send_mail(${1:${2:Some}Mailer}, :${3:mailer_action}${5:, {
-	:from =&gt; ${10:'${11:from@acme.com}'}, 
-	:to =&gt; ${12:'${13:some@user.com}'},
-	:subject =&gt; ${15:'${16:Email subject}'}
-\\}${20:, { :${25:user} =&gt; ${26:@user} \\}}})".scan_snippets.should eql([
-      "${1:${2:Some}Mailer}", "${3:mailer_action}", "${5:, {
-        :from =&gt; ${10:'${11:from@acme.com}'}, 
-        :to =&gt; ${12:'${13:some@user.com}'},
-        :subject =&gt; ${15:'${16:Email subject}'}
-      \\}${20:, { :${25:user} =&gt; ${26:@user} \\}}}"
-    ])
-  end
-
   it 'should match aftp' do
     str = "after Proc.new { |c| ${1:c.some_method} }${2:, :${10:only} =&gt; ${11:[${12::login, :signup}]}}"
     str.scan_snippets.should eql([
       "${1:c.some_method}", 
       "${2:, :${10:only} =&gt; ${11:[${12::login, :signup}]}}"
+    ])
+  end
+
+  it 'should match send_mail' do
+    str = "send_mail(${1:${2:Some}Mailer}, :${3:mailer_action}${5:, {
+	:from =&gt; ${10:'${11:from@acme.com}'}, 
+	:to =&gt; ${12:'${13:some@user.com}'},
+	:subject =&gt; ${15:'${16:Email subject}'}
+}${20:, { :${25:user} =&gt; ${26:@user} }}})"
+    str.scan_snippets.should eql([
+      "${1:${2:Some}Mailer}",
+      "${3:mailer_action}",
+      "${5:, {
+	:from =&gt; ${10:'${11:from@acme.com}'}, 
+	:to =&gt; ${12:'${13:some@user.com}'},
+	:subject =&gt; ${15:'${16:Email subject}'}
+}${20:, { :${25:user} =&gt; ${26:@user} }}}"
+    ])
+  end
+
+  it 'should match send_mail subexpr' do
+    str = ", {
+	:from =&gt; ${10:'${11:from@acme.com}'}, 
+	:to =&gt; ${12:'${13:some@user.com}'},
+	:subject =&gt; ${15:'${16:Email subject}'}
+}${20:, { :${25:user} =&gt; ${26:@user} }})"
+    str.scan_snippets.should eql([
+      "${10:'${11:from@acme.com}'}",
+      "${12:'${13:some@user.com}'}",
+      "${15:'${16:Email subject}'}",
+      "${20:, { :${25:user} =&gt; ${26:@user} }}"
     ])
   end
 end
