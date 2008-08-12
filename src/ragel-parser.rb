@@ -1,13 +1,11 @@
 # line 1 "./ragel-parser.rl"
-@elements = []
-@depth = 0
-@mark  = -1
+module RagelParser
 
-# line 34 "./ragel-parser.rl"
+# line 32 "./ragel-parser.rl"
 
 
 
-# line 11 "./ragel-parser.rb"
+# line 9 "./ragel-parser.rb"
 class << self
 	attr_accessor :_snippet_parser_actions
 	private :_snippet_parser_actions, :_snippet_parser_actions=
@@ -108,9 +106,11 @@ class << self
 end
 self.snippet_parser_en_main = 0;
 
-# line 37 "./ragel-parser.rl"
+# line 35 "./ragel-parser.rl"
 
-def run_machine(data)
+def self.run_machine(data)
+  elements = []
+  depth = 0
   
 # line 116 "./ragel-parser.rb"
 begin
@@ -207,58 +207,58 @@ tokstart = p
 		_acts += 1
 		case _snippet_parser_actions[_acts - 1]
 when 0:
-# line 8 "./ragel-parser.rl"
+# line 6 "./ragel-parser.rl"
 		begin
  
-	@depth += 1
-	@elements << [p] if @depth == 1
+	depth += 1
+	elements << [p] if depth == 1
 		end
-# line 8 "./ragel-parser.rl"
+# line 6 "./ragel-parser.rl"
 when 1:
-# line 13 "./ragel-parser.rl"
+# line 11 "./ragel-parser.rl"
 		begin
 
-	@depth += 1
+	depth += 1 if depth >= 1
 		end
-# line 13 "./ragel-parser.rl"
+# line 11 "./ragel-parser.rl"
 when 2:
-# line 17 "./ragel-parser.rl"
+# line 15 "./ragel-parser.rl"
 		begin
 
-	@elements.last << p if @depth == 1
-	@depth -= 1
+	elements.last << p if depth == 1
+	depth -= 1 if depth >= 1
 		end
-# line 17 "./ragel-parser.rl"
+# line 15 "./ragel-parser.rl"
 when 5:
-# line 28 "./ragel-parser.rl"
+# line 26 "./ragel-parser.rl"
 		begin
 tokend = p+1
 		end
-# line 28 "./ragel-parser.rl"
+# line 26 "./ragel-parser.rl"
 when 6:
-# line 29 "./ragel-parser.rl"
+# line 27 "./ragel-parser.rl"
 		begin
 tokend = p+1
 		end
-# line 29 "./ragel-parser.rl"
+# line 27 "./ragel-parser.rl"
 when 7:
-# line 30 "./ragel-parser.rl"
+# line 28 "./ragel-parser.rl"
 		begin
 tokend = p+1
 		end
-# line 30 "./ragel-parser.rl"
+# line 28 "./ragel-parser.rl"
 when 8:
-# line 31 "./ragel-parser.rl"
+# line 29 "./ragel-parser.rl"
 		begin
 tokend = p+1
 		end
-# line 31 "./ragel-parser.rl"
+# line 29 "./ragel-parser.rl"
 when 9:
-# line 31 "./ragel-parser.rl"
+# line 29 "./ragel-parser.rl"
 		begin
 tokend = p
 p = p - 1;		end
-# line 31 "./ragel-parser.rl"
+# line 29 "./ragel-parser.rl"
 # line 263 "./ragel-parser.rb"
 		end # action switch
 	end
@@ -285,4 +285,10 @@ tokstart = nil;		end
 	end
 	end
 # line 41 "./ragel-parser.rl"
+
+  elements.map do |element|
+    start, stop = element
+    [start - 1, stop ]
+  end
+end
 end

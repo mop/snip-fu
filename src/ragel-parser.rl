@@ -1,22 +1,20 @@
-@elements = []
-@depth = 0
-@mark  = -1
+module RagelParser
 
 %%{
 machine snippet_parser;
 
 action push { 
-	@depth += 1
-	@elements << [fpc] if @depth == 1
+	depth += 1
+	elements << [fpc] if depth == 1
 }
 
 action push_regular {
-	@depth += 1
+	depth += 1 if depth >= 1
 }
 
 action pop {
-	@elements.last << fpc if @depth == 1
-	@depth -= 1
+	elements.last << fpc if depth == 1
+	depth -= 1 if depth >= 1
 }
 
 open_tag  = "${";
@@ -35,7 +33,15 @@ main := |*
 
 %% write data;
 
-def run_machine(data)
+def self.run_machine(data)
+  elements = []
+  depth = 0
   %% write init;
   %% write exec;
+
+  elements.map do |element|
+    start, stop = element
+    [start - 1, stop ]
+  end
+end
 end
