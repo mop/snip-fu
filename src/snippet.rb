@@ -7,8 +7,8 @@ class Snippet
   def initialize(
     key,
     command,
-    window=VIM::Window.current,
-    buffer=VIM::Buffer.current
+    window=Vim::Window.current,
+    buffer=Vim::Buffer.current
   )
 
     @key     = key
@@ -72,7 +72,7 @@ class Snippet
   # String::
   #   The first line of the command, inserted into the vi-buffer is returned.
   def first_command_line
-    str = buffer.line
+    str = buffer.line.dup
     if multiline?
       str[last_word_start, str.size]  = splitted_command.first
     else
@@ -145,7 +145,7 @@ class Snippet
       tabs = Vim.evaluate('tabs').to_i
       tabstr = "\t"
     end
-    tabstr * tabs
+    tabstr * tabs rescue ''
   end
 end
 

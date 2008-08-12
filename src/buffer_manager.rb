@@ -1,5 +1,7 @@
 require 'inserter'
 require 'snippet'
+require 'string_extractor'
+require 'string_inserter'
 
 String.send(:include, GeditSnippetMatcher)
 
@@ -39,6 +41,10 @@ class BufferManager
         "aftp",
         "after Proc.new { |c| ${1:c.some_method} }${2:, :${10:only} =&gt; ${11:[${12::login, :signup}]}}",
         @window, @buffer
+      ),
+      Snippet.new(
+        "test",
+        "test ${1:value} something ${1}", @window, @buffer
       )
     ]
   end
@@ -73,19 +79,60 @@ class BufferManager
     end
   end
 
+  # Renames other tags, which have the same mark as the last one with the 
+  # contents of the last node. Only regular tags will be renamed, not
+  # extended tags.
+  #
+  # ==== Notes
+  # This method modifies the buffer.
+  def rename_other
+    digit = @last_edited[0].digit_tag
+    digit_str = "${#{digit}}"
+    while buffers_lines =~ /\$\{#{digit}\}/m
+      line_number = to_line_number(digit_str)
+      line = buffer[line_number]
+      to_insert = last_insert
+      idx = line.index(digit_str)
+      buffer[line_number] = line.sub(digit_str, "")
+      StringInserter.new(buffer, to_insert, [line_number, idx]).insert_string
+    end
+  end
+
+  # This method returns the string the user has inserted
+  def last_insert
+    if @was_restored
+      @was_restored = nil
+      return previous_selection
+    end
+    prev_pos, prev_line = @last_edited[1, 2]
+    line, pos           = window.cursor
+    StringExtractor.new(
+      buffer, [prev_line, prev_pos], [line, pos]
+    ).extract_string
+  end
+
   # Jumps to the next tag in the buffer. If the tag is an extended tag, it'll
   # mark the contents of the tag with the cursor. 
   # ---
   # @public
   def jump
     restore_previous if previous_not_edited?
+    rename_other     if previous_selection
     matches = buffers_lines.scan_snippets
-    return unless matches.size > 0
+    return cleanup unless matches.size > 0
     
     match = matches.sort.first
     line_number = to_line_number(match)
     position_cursor(line_number, match.start_tag) 
     remove_mark(line_number, match)
+    cleanup if buffers_lines.scan_snippets.size == 0
+  end
+
+  # Cleans up all the bunch of hacks we don't need anymore, since there
+  # are no tags anymore in the buffer.
+  def cleanup
+    @last_edited  = nil
+    @was_restored = nil
   end
 
   # Converts the given match to the start-line-number in the Vi-buffer.
@@ -126,6 +173,7 @@ class BufferManager
   def restore_previous
     return unless @last_edited
     Snippet.new('', previous_selection).insert_snippet
+    @was_restored = true  # HACK
   end
 
   # Returns the previous selected word in an extended-tag. If the previous tag

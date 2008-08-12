@@ -45,7 +45,24 @@ module GeditSnippetMatcher
         (\$\{         # The regular starting sequence of one of our tags: ${
         \d+           # Every tag must have a number after the opening: ${12
         :?)           # Only extended tags _might_ include a ':': ${12:
-      /x)[0]
+      /xm)[0]
+    end
+
+    # Returns the digit within the tag
+    #
+    # ==== Returns
+    # String::
+    #   A new string is returned, which includes only the digit of the tag.
+    #
+    # ===== Example
+    #   "${3:val}".digit_tag                 # => "3"
+    #   "some ${3:val} string".digit_tag     # => nil
+    def digit_tag
+      self.match(/
+        \$\{         # The regular starting sequence of one of our tags: ${
+        (\d+)        # Every tag must have a number after the opening: ${12
+        :?           # Only extended tags _might_ include a ':': ${12:
+      /xm)[1]
     end
 
     def single_tag?

@@ -43,7 +43,7 @@ end
 
 describe BufferManager, 'jump' do
   before(:each) do
-    Vim = stub_everything
+    Vim = stub_everything(:evaluate => ' ')
     @buffer = BufferStub.new("for ${1:key} in ${2:val}")
     @window = WindowStub.new(1, 1)
     @snippet = mock('Snippet')
@@ -125,6 +125,84 @@ describe BufferManager, 'jump' do
       Inserter.should_receive(:new).with(1, "${1:k\nkey}", @buffer).
         and_return(@inserter)
       @manager.jump
+    end
+  end
+end
+
+describe BufferManager, 'restoring of same symbol' do
+  before(:each) do
+    Vim = stub_everything
+    @buffer = BufferStub.new("for ${1:key} in ${2:val}")
+    @window = WindowStub.new(1, 1)
+
+    @inserter = mock('inserter')
+    @inserter.stub!(:remove_tags_from_buffer!)
+    @inserter.stub!(:key_directions).and_return("")
+    @inserter.stub!(:start_pos)
+    Inserter.stub!(:new).and_return(@inserter)
+    @manager = BufferManager.new(@window, @buffer)
+  end
+
+  describe 'restoring via template' do
+    before(:each) do
+      @backup = @buffer.contents
+      @buffer.contents[0] = "for  ${1}"
+      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @manager.instance_variable_set(:@was_restored, true)
+    end
+
+    after(:each) do
+      @buffer.contents = @backup
+    end
+
+    it 'should replace ${1}' do
+      @manager.jump
+      # we are not stubbing the insert here 
+      @buffer.contents[0].should eql("for  key")
+    end
+  end
+
+  describe 'restoring via input' do
+    before(:each) do
+      @backup = @buffer.contents
+      @buffer.contents[0] = "for wohoo ${1}"
+      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @cursor_backup = @window.cursor
+      @window.cursor = [ 1, 9 ]
+    end
+
+    after(:each) do
+      @buffer.contents = @backup
+      @window.cursor   = @cursor_backup
+    end
+
+    it 'should replace ${1}' do
+      @manager.jump
+      # we are not stubbing the insert here 
+      @buffer.contents[0].should eql("for wohoo wohoo")
+    end
+  end
+
+  describe 'restoring via input with multiple lines' do
+    before(:each) do
+      @backup = @buffer.contents
+      @buffer.contents[0] = "for wo"
+      @buffer.contents[1] = "hoo something ${1}"
+      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @cursor_backup = @window.cursor
+      @window.cursor = [ 2, 3 ]
+    end
+
+    after(:each) do
+      @buffer.contents = @backup
+      @window.cursor   = @cursor_backup
+    end
+    
+    it 'should replace ${1}' do
+      @manager.jump
+      # we are not stubbing the insert here 
+      @buffer.contents[1].should eql("hoo something wo")
+      @buffer.contents[2].should eql("hoo")
     end
   end
 end

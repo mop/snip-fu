@@ -16,6 +16,21 @@ describe String, 'start_tag-method' do
   end
 end
 
+describe String, 'digit_tag-method' do
+  before(:each) do
+    String.send(:include, GeditSnippetMatcher)
+  end
+
+  it 'should extract the digit out of extended tags' do
+    "${23:something}".digit_tag.should eql('23')
+  end
+
+  it 'should extract the digit out of regular tags' do
+    "${23}".digit_tag.should eql('23')
+  end
+  
+end
+
 describe String, 'without_tags-method' do
   before(:each) do
     String.send(:include, GeditSnippetMatcher)
