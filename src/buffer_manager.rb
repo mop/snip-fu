@@ -22,31 +22,8 @@ class BufferManager
     @window = window
     @buffer = buffer
 
-    @snippets ||= [
-      Snippet.new(
-        "for",
-        "for ${0:key} in ${1:vals}\n${2}\nend\n${3}",
-        @window, @buffer
-      ),
-      Snippet.new(
-        "send_mail",
-        "send_mail(${1:${2:Some}Mailer}, :${3:mailer_action}${5:, {
-	:from =&gt; ${10:'${11:from@acme.com}'}, 
-	:to =&gt; ${12:'${13:some@user.com}'},
-	:subject =&gt; ${15:'${16:Email subject}'}
-}${20:, { :${25:user} =&gt; ${26:@user} }}})",
-        @window, @buffer
-      ),
-      Snippet.new(
-        "aftp",
-        "after Proc.new { |c| ${1:c.some_method} }${2:, :${10:only} =&gt; ${11:[${12::login, :signup}]}}",
-        @window, @buffer
-      ),
-      Snippet.new(
-        "test",
-        "test ${1:value} something ${1}", @window, @buffer
-      )
-    ]
+    @snippet_loader = SnippetLoader.new
+    @snippet_loader.load_snippets
   end
 
   # Updates the buffer of the manager and of each of it's snippets with the 
@@ -59,7 +36,7 @@ class BufferManager
   # @public
   def buffer=(buf)
     @buffer = buf
-    @snippets.each do |snippet|
+    @snippet_loader.current_snippets.each do |snippet|
       snippet.buffer = buf
     end
   end
@@ -74,7 +51,7 @@ class BufferManager
   # @public
   def window=(win)
     @window = win
-    @snippets.each do |snippet|
+    @snippet_loader.current_snippets.each do |snippet|
       snippet.window = win 
     end
   end
@@ -273,7 +250,7 @@ class BufferManager
   # ---
   # @public
   def handle_insert
-    snippet = @snippets.find { |snip| snip.pressed? }
+    snippet = @snippet_loader.current_snippets.find { |snip| snip.pressed? }
     snippet.insert_snippet rescue nil
   end
 

@@ -6,6 +6,11 @@ describe BufferManager, 'update of window/buffer' do
     @buffer = mock('buffer')
     @snippet = mock('Snippet')
     Snippet.stub!(:new).and_return(@snippet)
+
+    @loader  = mock('Loader', :current_snippets => [@snippet])
+    @loader.stub!(:load_snippets)
+    SnippetLoader.stub!(:new).and_return(@loader)
+
     @manager = BufferManager.new(@window, @buffer)
   end
 
@@ -26,6 +31,11 @@ describe BufferManager, 'snippet insertion' do
     @window = WindowStub.new(1, 3)
     @snippet = mock('snippet')
     Snippet.stub!(:new).and_return(@snippet)
+
+    @loader  = mock('Loader', :current_snippets => [@snippet])
+    @loader.stub!(:load_snippets)
+    SnippetLoader.stub!(:new).and_return(@loader)
+
     @manager = BufferManager.new(@window, @buffer)
   end
 
@@ -50,6 +60,10 @@ describe BufferManager, 'jump' do
     @snippet.stub!(:pressed?).and_return(false)
 
     Snippet.stub!(:new).and_return(@snippet)
+
+    @loader  = mock('Loader', :current_snippets => [@snippet])
+    @loader.stub!(:load_snippets)
+    SnippetLoader.stub!(:new).and_return(@loader)
 
     @inserter = mock('inserter')
     @inserter.stub!(:remove_tags_from_buffer!)
@@ -140,6 +154,11 @@ describe BufferManager, 'restoring of same symbol' do
     @inserter.stub!(:key_directions).and_return("")
     @inserter.stub!(:start_pos)
     Inserter.stub!(:new).and_return(@inserter)
+
+    @loader  = mock('Loader', :current_snippets => [@snippet])
+    @loader.stub!(:load_snippets)
+    SnippetLoader.stub!(:new).and_return(@loader)
+
     @manager = BufferManager.new(@window, @buffer)
   end
 
@@ -206,3 +225,33 @@ describe BufferManager, 'restoring of same symbol' do
     end
   end
 end
+
+describe BufferManager, 'loading snippets' do
+  before(:each) do
+    @loader = mock("snippet loader")
+    @loader.stub!(:load_snippets)
+    SnippetLoader.stub!(:new).and_return(@loader)
+
+    @buffer = BufferStub.new("for ${1:key} in ${2:val}")
+    @window = WindowStub.new(1, 1)
+  end
+  
+  it 'should load the snippets in the beginning' do
+    @loader.should_receive(:load_snippets)
+    @manager = BufferManager.new(@window, @buffer)
+  end
+
+  it 'should update the current_snippets on buffer= and insert=' do
+    @manager = BufferManager.new(@window, @buffer)
+    @loader.should_receive(:current_snippets).twice.and_return([])
+    @manager.window = :new_win
+    @manager.buffer = :new_buf
+  end
+
+  it 'should call current_snippets when inserting a new snippet' do
+    @manager = BufferManager.new(@window, @buffer)
+    @loader.should_receive(:current_snippets).and_return([])
+    @manager.handle_insert
+  end
+end
+

@@ -1,0 +1,7 @@
+<snippet>
+  <filetype>ruby</filetype>
+  <key>if</key>
+  <command>if ${1:condition}
+  ${0}
+end</command>
+</snippet>
