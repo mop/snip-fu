@@ -56,7 +56,7 @@ describe BufferManager, 'jump' do
     Vim = stub_everything(:evaluate => ' ')
     @buffer = BufferStub.new("for ${1:key} in ${2:val}")
     @window = WindowStub.new(1, 1)
-    @snippet = mock('Snippet')
+    @snippet = mock('Snippet', :buffer= => nil, :window= => nil)
     @snippet.stub!(:pressed?).and_return(false)
 
     Snippet.stub!(:new).and_return(@snippet)
@@ -94,8 +94,12 @@ describe BufferManager, 'jump' do
       @manager.jump
     end
 
-    it 'should append VIM_HACK_NOTHING to result if the directions are empty'do
-      @inserter.should_receive(:key_directions).and_return("")
+    it 'should append VIM_HACK_NOTHING to result if the inserted tag was ' + 
+       'a regular tag'do
+      @buffer = BufferStub.new("for key in ${0}")
+      @window = WindowStub.new(1, 1)
+      @manager.buffer = @buffer
+      @manager.window = @window
       str = ""
       Vim.should_receive(:command).with(
         "let result = \"VIM_HACK_NOTHING\""

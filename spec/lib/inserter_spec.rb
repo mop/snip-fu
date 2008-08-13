@@ -32,6 +32,30 @@ describe 'A Inserter with an extended tag' do
   end
 end
 
+describe 'A inserter with a signle-sign extended tag' do
+  before(:each) do
+    @buffer = BufferStub.new('each { |${1:e}| ${0} }')
+    @mark   = '${1:e}'
+    @inserter = Inserter.new(1, @mark, @buffer)
+  end
+
+	it 'should remove the tag from the buffer correctly' do
+    @inserter.remove_tags_from_line.should eql("each { |e| ${0} }")
+  end
+
+	it 'should have the correct start position for the tag' do
+    @inserter.start_pos.should eql(8)
+  end
+
+  it 'should have the correct end position for the tag' do
+    @inserter.end_pos.should eql(8 + @mark.length - 1)
+  end
+
+  it 'should return the correct key_directions' do
+    @inserter.key_directions.should eql('')
+  end
+end
+
 describe 'A Inserter with a regular tag' do
   before(:each) do
     @buffer   = BufferStub.new(

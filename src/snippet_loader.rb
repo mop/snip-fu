@@ -1,10 +1,8 @@
 require 'snippet'
-require 'rexml/document'
 
 # This class is responsible for loading all sorts of snippets and grouping them
 # per filetype.
 class SnippetLoader
-  include REXML
   attr_accessor :snippets
 
   # Initializes the SnippetLoader
@@ -78,17 +76,14 @@ class SnippetLoader
   # string<String>::
   #   The content of a snippet-xml file
   def parse_snippet(string)
-    doc      = Document.new(string)
-    filetype = XPath.first(doc, '//filetype').text
+    require 'rexml/document'
+    doc      = REXML::Document.new(string)
+    filetype = REXML::XPath.first(doc, '//filetype').text
     snippet  = Snippet.new(
-      XPath.first(doc, '//key').text,
-      XPath.first(doc, '//command').text
+      REXML::XPath.first(doc, '//key').text,
+      REXML::XPath.first(doc, '//command').text
     )
-    begin
-      @snippets[filetype] << snippet
-    rescue => e
-      p e
-    end
+    @snippets[filetype] << snippet
   end
 
   # Returns an array of all files in the snippet-directory
@@ -111,4 +106,3 @@ class SnippetLoader
     end
   end
 end
-

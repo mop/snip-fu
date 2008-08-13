@@ -2,6 +2,7 @@ require 'inserter'
 require 'snippet'
 require 'string_extractor'
 require 'string_inserter'
+require 'snippet_loader'
 
 String.send(:include, GeditSnippetMatcher)
 
@@ -98,11 +99,27 @@ class BufferManager
     matches = buffers_lines.scan_snippets
     return cleanup unless matches.size > 0
     
-    match = matches.sort.first
+    match = first_match(matches)
     line_number = to_line_number(match)
     position_cursor(line_number, match.start_tag) 
     remove_mark(line_number, match)
     cleanup if buffers_lines.scan_snippets.size == 0
+  end
+
+  # This method sorts the matches after the tag-number and returns the first
+  # element. If the tag has a zero, it should be the last element of the array.
+  #
+  # ==== Parameters
+  # matches<String>::
+  #   An array which contains tags, which are in the buffer-stream
+  #
+  # ==== Returns:
+  # String::
+  #   The first tag in the given array is returned.
+  def first_match(matches)
+    matches.sort_by do |a| 
+      a.start_tag.index("${0") ? "${9999999999:" : a
+    end.first
   end
 
   # Cleans up all the bunch of hacks we don't need anymore, since there
@@ -211,8 +228,8 @@ class BufferManager
     inserter     = Inserter.new(line_number, mark, buffer)
     no_tags      = inserter.remove_tags_from_buffer!
     directions   = inserter.key_directions
-    make_result(directions)
     @last_edited = [mark, inserter.start_pos, line_number]
+    make_result(directions)
   end
 
   # This talks to vim and returns some results to it, so that the 
@@ -223,7 +240,7 @@ class BufferManager
   #   A string with a list of directions the cursor should walk in visual
   #   mode.
   def make_result(directions)
-    if directions.size > 0
+    unless @last_edited[0].single_tag?
       Vim::command(
         "let result = \"\\<Esc>\\<Right>v#{directions}\\o\\<c-g>\""
       ) 
