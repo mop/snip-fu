@@ -1,5 +1,6 @@
 require 'matcher'
 require 'inserter'
+require 'command_formatter'
 
 # This class represents a Snippet
 class Snippet
@@ -32,6 +33,8 @@ class Snippet
   # ---
   # @public
   def insert_snippet
+    @command_backup = @command
+    @command = CommandFormatter.new(@command).format
     after       = after_command
     buffer.line = first_command_line
 
@@ -41,6 +44,7 @@ class Snippet
       c = "#{c}#{after}" if i == 0
       buffer.append(buffer.line_number, "#{tab_prefix}#{c}")
     end
+    @command = @command_backup
   end
 
   private
@@ -60,7 +64,7 @@ class Snippet
   #   The snippet-command is returned, splittet with \n to insert the lines
   #   into the vi-buffer.
   def splitted_command
-    @splitted_command ||= @command.split("\n")
+    @command.split("\n")
   end
 
   # Returns the first line of the command, inserted into the vi-buffer, is

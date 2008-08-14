@@ -228,6 +228,52 @@ describe BufferManager, 'restoring of same symbol' do
       @buffer.contents[2].should eql("hoo")
     end
   end
+
+  describe 'mirroring extended tags' do
+    before(:each) do
+      @backup = @buffer.contents
+      @buffer.contents[0] = "for wo"
+      @buffer.contents[1] = "hoo something ${1:someotherkey}"
+      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @cursor_backup = @window.cursor
+      @window.cursor = [ 2, 3 ]
+    end
+
+    after(:each) do
+      @buffer.contents = @backup
+      @window.cursor   = @cursor_backup
+    end
+
+    it 'should replace ${1:someotherkey}' do
+      @manager.jump
+      # we are not stubbing the insert here 
+      @buffer.contents[1].should eql("hoo something wo")
+      @buffer.contents[2].should eql("hoo")
+    end
+  end
+
+  describe 'applying transformations on extended tags' do
+    before(:each) do
+      @backup = @buffer.contents
+      @buffer.contents[0] = "for wo"
+      @buffer.contents[1] = "hoo something ${1/wo/zomg/g}"
+      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @cursor_backup = @window.cursor
+      @window.cursor = [ 2, 3 ]
+    end
+
+    after(:each) do
+      @buffer.contents = @backup
+      @window.cursor   = @cursor_backup
+    end
+
+    it 'should replace and transform ${1/wo/zomg}' do
+      @manager.jump
+      # we are not stubbing the insert here 
+      @buffer.contents[1].should eql("hoo something zomg")
+      @buffer.contents[2].should eql("hoo")
+    end
+  end
 end
 
 describe BufferManager, 'loading snippets' do
