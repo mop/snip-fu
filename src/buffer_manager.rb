@@ -243,9 +243,15 @@ class BufferManager
   #   mode.
   def make_result(directions)
     unless @last_edited[0].single_tag?
-      Vim::command(
-        "let result = \"\\<Esc>\\<Right>v#{directions}\\o\\<c-g>\""
-      ) 
+      unless @last_edited[1] == 0
+        Vim::command(
+          "let result = \"\\<Esc>\\<Right>v#{directions}\\o\\<c-g>\""
+        ) 
+      else
+        Vim::command(
+          "let result = \"\\<Esc>\\v#{directions}\\o\\<c-g>\""
+        ) 
+      end
     else
       Vim::command("let result = \"VIM_HACK_NOTHING\"") # HACK
     end

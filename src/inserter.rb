@@ -32,6 +32,7 @@ class Inserter
     # some vodoo magic here. TODO explain this
     subtract = 1
     subtract += start_tag.length if vertical == 0
+    subtract = 0 if @buffer_modified
     horizontal = (start_pos)  - (end_pos - subtract)
     move_vertical(vertical) + 
     move_horizontal(horizontal)
@@ -102,10 +103,21 @@ class Inserter
     StringInserter.new(@buffer, @mark.without_tags, [
       start_line, start_pos
     ]).insert_string
+    clear
     @mark
   end
 
   private
+
+  # Clears the start_pos, end_pos and sets a global flag, which indicates
+  # that the buffer was already modified. This has influence to the
+  # key_directions-method, which now don't need to subtract the start_tag-size
+  # from the position.
+  def clear
+    @end_line = find_final_end_line
+    @end_pos  = find_final_end_pos
+    @buffer_modified = true
+  end
 
   # Removes the lines between end_line and start_line. It also removes
   # the end_line. The remaining contents of end_line must therefore 
@@ -185,6 +197,24 @@ class Inserter
   def find_end_line
     start  = start_line
     length = @mark.length
+    while buffer[start].length < length
+      length -= buffer[start].length
+      start += 1
+    end
+    start
+  end
+
+  def find_final_end_pos
+    total_pos = start_pos + mark.length - 2 - mark.start_tag.size 
+    return total_pos if start_line == end_line
+    (start_line...end_line).inject(total_pos) do |length, i|
+      length - buffer[i].length - 1
+    end 
+  end
+
+  def find_final_end_line
+    start  = start_line
+    length = @mark.length - @mark.start_tag.size - 1
     while buffer[start].length < length
       length -= buffer[start].length
       start += 1

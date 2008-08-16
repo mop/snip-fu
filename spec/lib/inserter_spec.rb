@@ -79,6 +79,28 @@ describe 'A Inserter with a regular tag' do
   end
 end
 
+describe 'A inserter handling a tag at the end of the line' do
+  before(:each) do
+    @buffer   = BufferStub.new(
+      "def ${1:methodName}\n  ${0}\nend"
+    )
+    @mark     = "${1:methodName}"
+    @inserter = Inserter.new(1, @mark, @buffer)
+    @inserter.remove_tags_from_buffer!
+  end
+
+  it 'should remove the mark correctly' do
+    @buffer[1].should eql('def methodName')
+    @buffer[2].should eql('  ${0}')
+    @buffer[3].should eql('end')
+  end
+
+  it 'should move the correct key_directions' do
+    str = (1..9).map { |i| '\<Right>' }.join('')
+    @inserter.key_directions.should eql(str)
+  end
+end
+
 describe 'A Inserter with nested tags' do
 	before(:each) do
     @buffer   = BufferStub.new(
@@ -201,6 +223,12 @@ describe 'an inserter with formats in extended tags' do
     it 'should replace formats in extended tags' do
       @inserter.remove_tags_from_buffer!
       @buffer.contents[0].should eql('some thing nested')
+    end
+
+    it 'should return the correct key_directions afterwards' do
+      @inserter.remove_tags_from_buffer!
+      str = (1..11).map { |i| '\<Right>' }.join('')
+      @inserter.key_directions.should eql(str)
     end
   end
 
