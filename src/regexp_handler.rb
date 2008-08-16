@@ -1,3 +1,4 @@
+require 'condition_parser'
 # This class is responsible for replacing regular expressions
 # It formats regexps according to the given pattern.
 class RegexpHandler
@@ -184,20 +185,7 @@ class RegexpHandler
   end
 
   def apply_conditionals(result)
-    match = result.match(/\?(.*?):/)
-    return result unless match
-    rest = result[match.end(1) + 1, result.size]
-    cond = rest.split(':')
-    _if, _else = if cond.size == 1
-      [cond[0], '']
-    else
-      [cond[0], cond[1]]
-    end
-    if match[1].size > 0
-      _if
-    else 
-      _else
-    end
+    ConditionParser.new(result).evaluate
   end
 
   # Returns the text part of the expression
