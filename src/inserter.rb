@@ -18,28 +18,6 @@ class Inserter
     @buffer      = buffer
   end
 
-  # This function removes the tags form the first line of the buffer. 
-  # It returns the removed line and the buffer must be updated manually
-  # 
-  # ==== Returns
-  # String::
-  #   The selected line without the matched tag, which should be used to 
-  #   updated the buffer.
-  # ---
-  # @public
-  def remove_tags_from_line
-    line[end_pos] = "" if start_line == end_line     # Remove the end
-    line[start_pos, start_tag.length] = ""           # Remove the start
-    line
-  end
-
-  # Yields the number of elements of the mark without tags.
-  # ---
-  # @public
-  def map_elements
-    (0...(mark.length - start_tag.length - 2)).map { |i| yield i }
-  end
-
   # Returns some directions, which the cursor must walk to get to the 
   # end of the selection.
   #
@@ -57,17 +35,6 @@ class Inserter
     horizontal = (start_pos)  - (end_pos - subtract)
     move_vertical(vertical) + 
     move_horizontal(horizontal)
-  end
-  
-  def move_vertical(times)
-    dir = times < 0 ? '\<Down>' : '\<Up>'
-    (1..times.abs).map { |i| dir }.join('')
-  end
-
-  def move_horizontal(times)
-    dir = times < 0 ? '\<Right>' : '\<Left>'
-    times -= 1 if times > 0
-    (1..times.abs).map { |i| dir }.join('')
   end
 
   # Returns the start position (column of the tag)
@@ -120,24 +87,76 @@ class Inserter
   # DELETING THE TAGS FROM THE BUFFER, THERE IS NO WAY THAT START_LINE,
   # END_LINE, START_POS, ... MAKE SENSE!!!11!!
   #
+  # ==== Returns
+  # String:
+  #   The new formattet mark is returned, since it'll be formattet
+  #   with the CommandFormatter, if there are some placeholders in a tag.
+  #
   # ---
   # @public
   def remove_tags_from_buffer!
     # Cache before modification!
-    # TODO: Delete lines with Buffer#delete(lineno) and insert result of
-    # transformation. Don't forget to update the mark in the buffermanager,
-    # since the last_edited won't be updated and mirroring would blow up
-    el = end_line
-    ep = end_pos
-    buffer[start_line] = remove_tags_from_line
-    return if start_line == end_line
-
-    line_end     = buffer[el]
-    line_end[ep] = ''
-    buffer[el]   = line_end
+    buffer[start_line] = remove_tag_first_line + end_line_string
+    delete_lines!
+    create_new_mark!
+    StringInserter.new(@buffer, @mark.without_tags, [
+      start_line, start_pos
+    ]).insert_string
+    @mark
   end
 
   private
+
+  # Removes the lines between end_line and start_line. It also removes
+  # the end_line. The remaining contents of end_line must therefore 
+  # be appended to the start_line before calling this method!
+  def delete_lines!
+    (end_line - start_line).times { |i| buffer.delete(start_line + 1) }
+  end
+
+  # Creates the new mark via the command formatter. The contents of the 
+  # mark will be replaced with the result of the command formatter.
+  #
+  # ==== Returns
+  # String:: 
+  #   The new mark will be returned, but it will also be already modified 
+  #   via this method.
+  def create_new_mark!
+    tag = @mark.start_tag
+    @mark = tag + CommandFormatter.new(@mark.without_tags).format + "}"
+  end
+
+  # Returns the remaining string at end_line if there is a string left after
+  # the closing tag.
+  #
+  # ==== Returns
+  # String::
+  #   A string with the remaining part of the last_line will be returned.
+  #   The string should be appended to the first line.
+  def end_line_string
+    line_end = ""
+    if end_line != start_line
+      line_end   = buffer[end_line]
+      line_end[0, end_pos + 1] = ''
+    end
+    line_end
+  end
+
+  # Removes the tag in the first line and returns the string before the
+  # opening tag.
+  #
+  # ==== Returns
+  # String::
+  #   The part of the first_line before the opening tag is returned.
+  def remove_tag_first_line
+    if start_line == end_line
+      line[start_pos, end_pos - start_pos + 1] = ""
+    else
+      line[start_pos, line.size] = ""
+    end
+    line
+  end
+
   # Returns the selected line from the buffer
   #
   # ==== Returns
@@ -182,5 +201,34 @@ class Inserter
     (start_line...end_line).inject(total_pos) do |length, i|
       length - buffer[i].length - 1
     end 
+  end
+  
+  # Returns a string for moving vertical.
+  #
+  # ==== Parameters
+  # times<Fixnum>:: The number of times the cursor should be moved vertical
+  #
+  # ==== Returns
+  # String:: 
+  #   A string is returned representing the number of times the VI-cursor must
+  #   be moved vertical in order to reach the end of the tag.
+  def move_vertical(times)
+    dir = times < 0 ? '\<Down>' : '\<Up>'
+    (1..times.abs).map { |i| dir }.join('')
+  end
+
+  # Returns a string for moving horizontal.
+  #
+  # ==== Parameters
+  # times<Fixnum>:: The number of times the cursor should be moved horizontal
+  #
+  # ==== Returns
+  # String:: 
+  #   A string is returned representing the number of times the VI-cursor must
+  #   be moved horizontal in order to reach the end of the tag.
+  def move_horizontal(times)
+    dir = times < 0 ? '\<Right>' : '\<Left>'
+    times -= 1 if times > 0
+    (1..times.abs).map { |i| dir }.join('')
   end
 end

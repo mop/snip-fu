@@ -58,4 +58,18 @@ describe StringInserter do
       @buffer.contents[0].should eql("for  key")
     end
   end
+
+  describe 'insertion appending last line' do
+    before(:each) do
+      @buffer = BufferStub.new("something\nwith\nmultiple\nlines")
+    end
+
+    it 'should insert the string on the correct position' do
+      StringInserter.new(@buffer, "newstr", [1, 4]).insert_string
+      @buffer.contents[0].should eql("somenewstrthing")
+      @buffer.contents[1].should eql("with")
+      @buffer.contents[2].should eql("multiple")
+      @buffer.contents[3].should eql("lines")
+    end
+  end
 end

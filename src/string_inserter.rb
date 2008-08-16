@@ -26,6 +26,7 @@ class StringInserter
   # ---
   # @public
   def insert_string
+    return if string == ""
     to_append = first_line_rest
     buffer[start_line] = first_line
 

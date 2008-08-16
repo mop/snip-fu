@@ -78,4 +78,13 @@ class BufferStub
   def count
     @contents.size
   end
+
+  # Deletes the given line number
+  #
+  # ==== Parameters
+  # num<Fixnum>::
+  #   The line number which should be deleted
+  def delete(num)
+    @contents.delete_at(num - 1)
+  end
 end

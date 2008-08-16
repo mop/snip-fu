@@ -10,7 +10,8 @@ describe 'A Inserter with an extended tag' do
   end
   
 	it 'should remove the tag from the buffer correctly' do
-    @inserter.remove_tags_from_line.should eql("some string for key after")
+    @inserter.remove_tags_from_buffer!
+    @buffer[2].should eql("some string for key after")
   end
 
 	it 'should have the correct start position for the tag' do
@@ -19,12 +20,6 @@ describe 'A Inserter with an extended tag' do
 
   it 'should have the correct end position for the tag' do
     @inserter.end_pos.should eql(16 + @mark.length - 1)
-  end
-
-	it 'should map the correct number of elements' do
-    i = 0
-    @inserter.map_elements { |e| i += 1 }
-    i.should eql(2)
   end
 
   it 'should return the correct key_directions' do
@@ -40,7 +35,8 @@ describe 'A inserter with a signle-sign extended tag' do
   end
 
 	it 'should remove the tag from the buffer correctly' do
-    @inserter.remove_tags_from_line.should eql("each { |e| ${0} }")
+    @inserter.remove_tags_from_buffer!
+    @buffer[1].should eql("each { |e| ${0} }")
   end
 
 	it 'should have the correct start position for the tag' do
@@ -66,7 +62,8 @@ describe 'A Inserter with a regular tag' do
   end
   
 	it 'should remove the tag from the buffer correctly' do
-    @inserter.remove_tags_from_line.should eql("some string for  after")
+    @inserter.remove_tags_from_buffer!
+    @buffer[2].should eql("some string for  after")
   end
 
 	it 'should have the correct start position for the tag' do
@@ -75,12 +72,6 @@ describe 'A Inserter with a regular tag' do
 
 	it 'should have the correct end position for the tag' do
     @inserter.end_pos.should eql(16 + @mark.length - 1)
-  end
-    
-	it 'should map the correct number of elements' do
-    i = 0
-    @inserter.map_elements { |e| i += 1 }
-    i.should eql(0)
   end
 
   it 'should return the correct key_directions' do
@@ -98,7 +89,8 @@ describe 'A Inserter with nested tags' do
   end
 
 	it 'should remove the tag from the buffer correctly' do
-    @inserter.remove_tags_from_line.should eql(
+    @inserter.remove_tags_from_buffer!
+    @buffer[1].should eql(
       "some thing ${2: nested} after after"
     )
   end
@@ -109,12 +101,6 @@ describe 'A Inserter with nested tags' do
 
 	it 'should have the correct end position for the tag' do
     @inserter.end_pos.should eql(33)
-  end
-
-	it 'should map the correct number of elements' do
-    i = 0
-    @inserter.map_elements { |z| i += 1 }
-    i.should eql(23)
   end
 
   it 'should return the correct key_directions' do
@@ -153,18 +139,6 @@ describe 'An inserter handling tags spanning over multiple lines' do
 
   it 'should have the correct end position' do
     @inserter.end_pos.should eql(19)
-  end
-
-  it 'should have the correct elements count' do
-    i = 0
-    @inserter.map_elements { |z| i += 1 }
-    i.should eql(24)
-  end
-
-	it 'should remove the tag from the buffer correctly' do
-    @inserter.remove_tags_from_line.should eql(
-      "some thing"
-    )
   end
 
   it 'should return the correct key_directions' do
@@ -206,12 +180,6 @@ describe 'An inserter handling tags spanning over multiple empty lines' do
 
   it 'should have the correct end position' do
     @inserter.end_pos.should eql(6)
-  end
-
-	it 'should remove the tag from the buffer correctly' do
-    @inserter.remove_tags_from_line.should eql(
-      "some thing"
-    )
   end
 
   it 'should return the correct key_directions' do
