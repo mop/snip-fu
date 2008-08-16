@@ -80,6 +80,12 @@ describe 'a command preprocessor' do
       CommandFormatter.new("${MISSING:${MISSING2:default2}} ${1:tag}"
       ).format.should eql("default2 ${1:tag}")
     end
+
+    # The ultimate spec#2 :P
+    it 'should not allow nesting in placeholder tags' do
+      CommandFormatter.new("${1:tag${MISSING2:default2}}"
+      ).format.should eql("${1:tag${MISSING2:default2}}")
+    end
 	end
   
 	describe 'handling of shellcode' do

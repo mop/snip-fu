@@ -124,6 +124,9 @@ class Inserter
   # @public
   def remove_tags_from_buffer!
     # Cache before modification!
+    # TODO: Delete lines with Buffer#delete(lineno) and insert result of
+    # transformation. Don't forget to update the mark in the buffermanager,
+    # since the last_edited won't be updated and mirroring would blow up
     el = end_line
     ep = end_pos
     buffer[start_line] = remove_tags_from_line

@@ -18,7 +18,7 @@ class RegexpHandler
   #   The translated text is returned.
   def replace
     re = Regexp.new(regexp)
-    fold_cases(text.sub(re, format))
+    apply_conditionals(fold_cases(text.sub(re, format)))
   end
 
   private
@@ -183,6 +183,23 @@ class RegexpHandler
     str
   end
 
+  def apply_conditionals(result)
+    match = result.match(/\?(.*?):/)
+    return result unless match
+    rest = result[match.end(1) + 1, result.size]
+    cond = rest.split(':')
+    _if, _else = if cond.size == 1
+      [cond[0], '']
+    else
+      [cond[0], cond[1]]
+    end
+    if match[1].size > 0
+      _if
+    else 
+      _else
+    end
+  end
+
   # Returns the text part of the expression
   #
   # ==== Returns
@@ -227,6 +244,8 @@ class RegexpHandler
       tmp = match[1, match.size]
       tmp = tmp[1].chr if tmp.size > 1
       "\\#{tmp}"
+    end.gsub(/[^\\]?\?\d/) do |match|
+      match[match.size - 1] = "#{match[0, 2]}\\#{match[match.size - 1].chr}"
     end
   end
 

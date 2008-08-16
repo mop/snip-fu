@@ -204,13 +204,13 @@ class CommandFormatter
   # ==== Returns
   # Regexp:: The regular expression which should be used.
   def extended_regex
-    /
+    /^
       \$?          # Every extended-tag starts with $
       (\{          # followed by { -> ${
       [^\d]        # it _must_not_ be followed by a single digit
       .+(:|\/).*?  # it must have a colon or a slash in it ${VAR1:default 
       \})          # it is closed by } -> ${VAR:default}
-    /xm
+    $/xm
   end
 
   # Returns the regular expression which should be used for searching 

@@ -219,3 +219,35 @@ describe 'An inserter handling tags spanning over multiple empty lines' do
     @inserter.key_directions.should eql(str)
   end
 end
+
+describe 'an inserter with formats in extended tags' do
+  describe 'with only one layer' do
+    before(:each) do
+      @buffer   = BufferStub.new(
+        "some ${1:thing ${VAR:nested}}"
+      )
+      @mark     = "${1:thing ${VAR:nested}}"
+      @inserter = Inserter.new(1, @mark, @buffer)
+    end
+
+    it 'should replace formats in extended tags' do
+      @inserter.remove_tags_from_buffer!
+      @buffer.contents[0].should eql('some thing nested')
+    end
+  end
+
+  describe 'double nested' do
+    before(:each) do
+      @buffer   = BufferStub.new(
+        "some ${1:thing ${2: nested ${VAR:default}}}"
+      )
+      @mark     = "${1:thing ${2: nested ${VAR:default}}}"
+      @inserter = Inserter.new(1, @mark, @buffer)
+    end
+
+    it 'should not replace formats in extended tags' do
+      @inserter.remove_tags_from_buffer!
+      @buffer.contents[0].should eql('some thing ${2: nested ${VAR:default}}')
+    end
+  end
+end

@@ -61,4 +61,20 @@ describe RegexpHandler do
       ).replace.should eql('SOMETHINGsSELECTED')
     end
   end
+
+  describe 'conditionals' do
+    it 'should handle a simple conditional' do
+      RegexpHandler.new(
+        'something selected/(something.*|other)/(?1:foo $1:bar)/g'
+      ).replace.should eql('foo something selected')
+    end
+
+    it 'should handle a simple else conditional' do
+      RegexpHandler.new(
+        'something selected/something.*(nomatch)?/(?1:foo $1:bar)/g'
+      ).replace.should eql('bar')
+    end
+
+    it 'should handle nested conditionals'
+  end
 end
