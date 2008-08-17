@@ -68,14 +68,6 @@ class BufferManager
     digit = @last_edited[0].digit_tag
     digit_str = "${#{digit}}"
     Mirrorer.new(buffer, @last_edited[0], last_insert).mirror_tags!
-    #while buffers_lines =~ /\$\{#{digit}\}/m
-    #  line_number = to_line_number(digit_str)
-    #  line = buffer[line_number]
-    #  to_insert = last_insert
-    #  idx = line.index(digit_str)
-    #  buffer[line_number] = line.sub(digit_str, "")
-    #  StringInserter.new(buffer, to_insert, [line_number, idx]).insert_string
-    #end
   end
 
   # This method returns the string the user has inserted

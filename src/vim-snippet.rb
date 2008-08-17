@@ -24,6 +24,7 @@ end
 VIM::command("function! JumpToMark()
   let result = \"\"
   ruby jump_to_mark()
+  echomsg result
   if result == \"VIM_HACK_NOTHING\"
     return \"\"
   endif
@@ -33,6 +34,10 @@ VIM::command("function! JumpToMark()
   return result
 endfunction")
 VIM::command("
-inoremap <silent> <script> <Tab> <C-R>=JumpToMark()<CR>
+imap <silent> <script> <Tab> <C-R>=JumpToMark()<CR>
+")
+# Thanks you, Felix Ingram :)
+VIM::command("
+smap <unique> <Tab> i<BS><Tab>
 ")
 
