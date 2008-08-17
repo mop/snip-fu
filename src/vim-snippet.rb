@@ -1,3 +1,4 @@
+$:.unshift(File.dirname(__FILE__))
 require 'buffer_manager'
 
 def buffer_manager
