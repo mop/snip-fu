@@ -24,7 +24,6 @@ end
 VIM::command("function! JumpToMark()
   let result = \"\"
   ruby jump_to_mark()
-  echomsg result
   if result == \"VIM_HACK_NOTHING\"
     return \"\"
   endif
