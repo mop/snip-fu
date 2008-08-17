@@ -1,0 +1,7 @@
+require 'mkmf'
+$CFLAGS = "#{$CFLAGS} -I/usr/include/glib-2.0/ -I/usr/lib/glib-2.0/include/ -std=gnu99 -g -fPIC -Wall"
+$LIBS = "#{$LIBS} -lglib-2.0"
+extension_name = 'tag_parser'
+dir_config(extension_name)
+create_makefile(extension_name)
+
