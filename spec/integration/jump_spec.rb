@@ -54,6 +54,27 @@ describe "A BufferManager when jumping" do
     end
   end
 
+  describe "when handling a big insertion at the end" do
+    before(:each) do
+      Vim = stub_everything
+      i = (1..100).map { |i| "\n" }.join("")
+      @buffer = BufferStub.new("#{i}def", 101)
+      @window = WindowStub.new(101, 3)
+      SnippetLoader.stub!(:new).and_return(snippet_loader_mock)
+      @buffer_manager = BufferManager.new(@window, @buffer)
+    end
+
+    it "should jump to the correct position" do
+      @buffer_manager.handle_insert
+      @buffer_manager.jump
+      @buffer[101].should == "def method_name"
+      @window.cursor = [103, 3]
+      @buffer.current_line = 103
+      @buffer_manager.jump
+      @buffer[102].should == "  "
+    end
+  end
+
   def snippet_loader_mock
     @loader ||= create_snippet_loader
   end

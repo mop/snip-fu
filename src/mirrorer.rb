@@ -30,9 +30,9 @@ class Mirrorer
 
   private
   def reduce_buffer_tags
-    buffer_str_lines.scan_snippets.each do |snippet|
+    buffer.buffer_lines.scan_snippets.each do |snippet|
       if mirror_tag?(snippet)
-        line_number = to_line_number(snippet)
+        line_number = buffer.to_line_number(snippet)
         line = buffer[line_number]
         pos  = line.index(snippet.start_tag) # The final insertion position
         repl = yield snippet
@@ -58,21 +58,5 @@ class Mirrorer
   # Returns true if the given str is a mirror tag for this object
   def mirror_tag?(str)
     str.digit_tag == @tag.digit_tag
-  end
-
-  def buffer_lines
-    (1..buffer.count).to_a
-  end
-
-  def buffer_str_lines
-    buffer_lines.map { |i| buffer[i] }.join("\n")
-  end
-
-  def to_line_number(match)
-    idx = buffer_str_lines.index(match)
-    buffer_lines.each do |line_number|
-      idx -= buffer[line_number].size
-      break line_number if idx <= 0
-    end
   end
 end

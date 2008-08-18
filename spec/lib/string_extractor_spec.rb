@@ -24,4 +24,16 @@ describe StringExtractor do
       )
     end
   end
+
+  describe "extraction of parts with only newlines" do
+    before(:each) do
+      @buffer = BufferStub.new("\n\n\n\nend")
+    end
+
+    it "should extract them without problems" do
+      StringExtractor.new(@buffer, [1, 1], [5, 3]).extract_string.should eql(
+        "\n\n\n\nend" 
+      )
+    end
+  end
 end

@@ -4,6 +4,7 @@ require 'string_extractor'
 require 'string_inserter'
 require 'snippet_loader'
 require 'mirrorer'
+require 'buffer_util'
 
 String.send(:include, GeditSnippetMatcher)
 
@@ -26,6 +27,15 @@ class BufferManager
 
     @snippet_loader = SnippetLoader.new
     @snippet_loader.load_snippets
+    monkey_patch_buffer!
+  end
+
+  # Monkeypatches the BufferUtil module into the buffer-object unless it's
+  # already patched in.
+  def monkey_patch_buffer!
+    unless @buffer.respond_to? :buffer
+      @buffer.class.send(:include, BufferUtil) 
+    end
   end
 
   # Updates the buffer of the manager and of each of it's snippets with the 
@@ -41,6 +51,8 @@ class BufferManager
     @snippet_loader.current_snippets.each do |snippet|
       snippet.buffer = buf
     end
+    monkey_patch_buffer!
+    @buffer
   end
 
   # Updates the window of the manager and of each of it's snippets with the 
@@ -90,14 +102,14 @@ class BufferManager
   def jump
     restore_previous if previous_not_edited?
     rename_other     if previous_selection
-    matches = buffers_lines.scan_snippets
+    matches = buffer.buffer_lines.scan_snippets
     return cleanup unless matches.size > 0
     
     match = first_match(matches)
-    line_number = to_line_number(match)
+    line_number = buffer.to_line_number(match)
     position_cursor(line_number, match.start_tag) 
     remove_mark(line_number, match)
-    cleanup if buffers_lines.scan_snippets.size == 0
+    cleanup if buffer.buffer_lines.scan_snippets.size == 0
   end
 
   # This method sorts the matches after the tag-number and returns the first
@@ -121,31 +133,6 @@ class BufferManager
   def cleanup
     @last_edited  = nil
     @was_restored = nil
-  end
-
-  # Converts the given match to the start-line-number in the Vi-buffer.
-  # 
-  # ==== Parameters
-  # match<String>::
-  #   Is a string which contains a matched tag e.g.: ${1:a tag}
-  #
-  # ==== Returns
-  # Fixnum::
-  #   Indicates the start-line of the expression in the buffer stream
-  #
-  # ==== Example
-  #   # Buffer-stream contains "some\nlines with ${1:a\ntag}"
-  #   # Buffer-array contains ["some", "lines", "with", "${1:a", "tag}"]
-  #   #                          /\       /\      /\        /\     /\
-  #   # Positions:               1        2       3         4      5
-  #   to_line_number("${1:a\ntag}")
-  #   # => 4
-  def to_line_number(match)
-    idx = buffers_lines.index(match)
-    buffer_line_cycle.each do |line_number|
-      idx -= buffer[line_number].size
-      break line_number if idx <= 0
-    end
   end
 
   # Restores the previous typed word, which wasn't modified by the user. This
@@ -272,30 +259,6 @@ class BufferManager
       snippet.insert_snippet
       @last_edited = nil
     end
-  end
-
-  # Returns the buffer-lines beginning at the current line number, until the
-  # end and from the beginning to the current line number.
-  # If we are e.g. on line number 3 and the buffer has e.g. 5 lines the
-  # following line-numbers are returned [3, 4, 5, 1, 2].
-  #
-  # ==== Returns
-  # Array[Fixnum]::
-  #   A list of line-number is returned.
-  def buffer_line_cycle
-    ((buffer.line_number..buffer.count).to_a + 
-    (1..buffer.line_number).to_a).uniq
-  end
-
-  # Maps the buffer_line_cycle-array to it's corresponding lines and joins them
-  # with "\n", so that a buffer stream is basically returned, starting on the
-  # current line position.
-  #
-  # ==== Returns 
-  # String::
-  #   The lines in the buffer are returned as a string-stream
-  def buffers_lines
-    buffer_line_cycle.map { |i| buffer[i] }.join("\n")
   end
 end
 

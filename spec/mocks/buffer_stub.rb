@@ -1,6 +1,6 @@
 # this class is a stub for the VIM-buffer
 class BufferStub
-  attr_accessor :contents
+  attr_accessor :contents, :current_line
   def initialize(contents, current_line=1)
     @contents = contents.split("\n")
     @current_line = current_line

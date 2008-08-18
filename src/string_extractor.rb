@@ -71,6 +71,6 @@ class StringExtractor
   #   A string is returned with the extracted first line.
   def first_line
     line = buffer[start_line]
-    line[start_pos, line.size] + "\n"
+    (line[start_pos, line.size] || "" ) + "\n"
   end
 end
