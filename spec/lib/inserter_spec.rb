@@ -247,3 +247,25 @@ describe 'an inserter with formats in extended tags' do
     end
   end
 end
+
+describe 'An inserter handling the rspec-it-tag' do
+  before(:each) do
+      @buffer   = BufferStub.new(
+        "it \"should description\" ${3:do\n  ${0}\nend}"
+      )
+      @mark     = "${3:do\n  ${0}\nend}"
+      @inserter = Inserter.new(1, @mark, @buffer)
+      @inserter.remove_tags_from_buffer!
+  end
+
+  it 'should modify the buffer correctly' do
+    @buffer[1].should == 'it "should description" do'
+    @buffer[2].should == '  ${0}'
+    @buffer[3].should == 'end'
+    @buffer[4].should be_nil
+  end
+
+  it 'should return the correct key_directions' do
+    @inserter.key_directions.should == "\\<Down>\\<Down>\\<Left>"
+  end
+end

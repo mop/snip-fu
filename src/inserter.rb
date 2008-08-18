@@ -29,11 +29,8 @@ class Inserter
   # @public
   def key_directions
     vertical   = start_line - end_line
+    horizontal = calculate_horizontal(vertical)
     # some vodoo magic here. TODO explain this
-    subtract = 1
-    subtract += start_tag.length if vertical == 0
-    subtract = 0 if @buffer_modified
-    horizontal = (start_pos)  - (end_pos - subtract)
     move_vertical(vertical) + 
     move_horizontal(horizontal)
   end
@@ -116,7 +113,7 @@ class Inserter
   def clear
     @end_line = find_final_end_line
     @end_pos  = find_final_end_pos
-    @buffer_modified = true
+    @tags_removed = true
   end
 
   # Removes the lines between end_line and start_line. It also removes
@@ -195,28 +192,30 @@ class Inserter
 
   # Helper method for #end_line. 
   def find_end_line
-    start  = start_line
-    length = @mark.length
-    while buffer[start].length < length
-      length -= buffer[start].length
-      start += 1
-    end
-    start
+    find_line { @mark.length + buffer[start_line].index(@mark.start_tag) } 
+  end
+
+  def find_final_end_line
+    find_line { @mark.length - @mark.start_tag.size - 1 + start_pos }
   end
 
   def find_final_end_pos
-    total_pos = start_pos + mark.length - 2 - mark.start_tag.size 
+    find_pos { start_pos + mark.length - 2 - mark.start_tag.size }
+  end
+
+  def find_pos
+    total_pos = yield
     return total_pos if start_line == end_line
     (start_line...end_line).inject(total_pos) do |length, i|
       length - buffer[i].length - 1
     end 
   end
 
-  def find_final_end_line
+  def find_line
     start  = start_line
-    length = @mark.length - @mark.start_tag.size - 1
+    length = yield
     while buffer[start].length < length
-      length -= buffer[start].length
+      length -= (buffer[start].length + 1)    # don't forget the \n
       start += 1
     end
     start
@@ -224,13 +223,7 @@ class Inserter
 
   # Helper method for #end_pos.
   def find_end_pos
-    total_pos = start_pos + mark.length - 1
-    if start_line == end_line
-      return total_pos
-    end
-    (start_line...end_line).inject(total_pos) do |length, i|
-      length - buffer[i].length - 1
-    end 
+    find_pos { start_pos + mark.length - 1 }
   end
   
   # Returns a string for moving vertical.
@@ -260,5 +253,50 @@ class Inserter
     dir = times < 0 ? '\<Right>' : '\<Left>'
     times -= 1 if times > 0
     (1..times.abs).map { |i| dir }.join('')
+  end
+
+
+  # Calculates the horizontal directions
+  #
+  # ==== Parameters
+  # vertical<Fixnum>::
+  #   The number of times the curser is either moved up or down
+  # 
+  # ==== Returns
+  # Fixnum:: 
+  #   The number of times the cursor must be moved left or right.
+  def calculate_horizontal(vertical)
+    return buffer[end_line].length - end_pos + 1 if line_too_small?
+    return start_pos - end_pos if @tags_removed
+    (start_pos)  - (end_pos - subtract(vertical))
+  end
+
+  # Returns true if the end-line of the buffer is smaller then the
+  # start-position. We must thus, use another algorithm to move the cursor
+  # to the appropriate end-position.
+  #
+  # ==== Returns
+  # Boolean::
+  #   True if the line is too small
+  def line_too_small?
+    start_pos > buffer[end_line].length
+  end
+
+  # Returns the value, which should be subtracted from end_pos. If the end_pos
+  # is in the same-line as the start_pos (vertical == 0), we must add the
+  # length of the start-tag to the value to subtract. Otherwise it's enought to
+  # subtract the lenght of the closing-tag (1)
+  #
+  # ==== Parameters
+  # vertical<Fixnum>::
+  #   The number of times the curser is either moved up or down
+  #
+  # ==== Returns
+  # Fixnum::
+  #   A number which should be subtracted from end_pos in order to 
+  #   find the correct horizontal length.
+  def subtract(vertical)
+    return 1 + start_tag.length if vertical == 0
+    1
   end
 end

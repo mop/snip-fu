@@ -268,7 +268,10 @@ class BufferManager
   # @public
   def handle_insert
     snippet = @snippet_loader.current_snippets.find { |snip| snip.pressed? }
-    snippet.insert_snippet rescue nil
+    if snippet
+      snippet.insert_snippet
+      @last_edited = nil
+    end
   end
 
   # Returns the buffer-lines beginning at the current line number, until the
