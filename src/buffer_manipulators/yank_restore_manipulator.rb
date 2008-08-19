@@ -1,24 +1,19 @@
-class MirrorManipulator
+class YankRestoreManipulator  
   attr_accessor :window, :buffer
+
 	def initialize(window=nil, buffer=nil)
     @window = window
     @buffer = buffer
   end
 
-  # Manipulates the buffer with the given history object.
-  #
-  # ==== Parameters
-  # history<TagHistory>::
-  #   A TagHistory-object whose information will be used to mirror the tags
   def manipulate!(history)
   	@history = history
-    return unless @history.last_tag
-    Mirrorer.new(buffer, history.last_tag, last_insert).mirror_tags!
+    restore_yank if @history.was_restored? || last_edited != ""
+    @history
   end
 
   private
-  # This method returns the string the user has inserted
-  def last_insert
+  def last_edited
     if @history.was_restored?
       @history.was_restored = false   # reset the flag
       return @history.last_tag.without_tags
@@ -26,5 +21,11 @@ class MirrorManipulator
     StringExtractor.new(
       buffer, [@history.line_number, @history.start_pos], window.cursor
     ).extract_string
+  end
+
+  def restore_yank
+    Vim.command(
+      "call setreg(v:register, \"#{@history.yank.gsub(/"/, '\"')}\")"
+    ) if @history.yank
   end
 end
