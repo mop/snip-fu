@@ -44,7 +44,9 @@ class StringInserter
   	@filetype = Vim.evaluate("&filetype")
     Vim.command("set indentexpr=\"\"")
     Vim.command("set indentkeys=\"\"")
-    Vim.command("unlet b:did_indent")
+    Vim.command("if exists(\"b:did_indent\")
+  unlet b:did_indent
+endif")
   end
 
   # Enables the indentation of vim
