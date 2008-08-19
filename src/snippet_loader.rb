@@ -76,30 +76,6 @@ class SnippetLoader
   # string<String>::
   #   The content of a snippet-xml file
   def parse_snippet(string)
-    #require 'rexml/document'
-    #doc      = REXML::Document.new(string)
-    #filetype = REXML::XPath.first(doc, '//filetype').text
-    #snippet  = Snippet.new(
-    #  REXML::XPath.first(doc, '//key').text,
-    #  REXML::XPath.first(doc, '//command').text
-    #)
-    
-    #doc = XML::Parser.string(string).parse
-    #filetype = doc.find('//filetype').first.content
-    #snippet  = Snippet.new(
-    #  doc.find('//key').first.content,
-    #  doc.find('//command').first.content
-    #)
-    #@snippets[filetype] << snippet
-
-    #doc = Hpricot.XML(string)
-    #filetype = (doc/:filetype).first.innerHTML
-    #snippet = Snippet.new(
-    #  (doc/:key).first.innerHTML,
-    #  (doc/:command).first.innerHTML
-    #)
-    #@snippets[filetype] << snippet
-
     filetype = string.scan(/<filetype>(.*?)<\/filetype>/m)[0][0]
     snippet = Snippet.new(
       string.scan(/<key>(.*?)<\/key>/m)[0][0],
