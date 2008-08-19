@@ -114,6 +114,7 @@ describe BufferManager, 'jump' do
       @buffer.contents[0] = "for  in ${2:val}"
       @window.cursor = [1, 4]
       @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @string_inserter = mock("string inserter")
     end
 
     after(:each) do
@@ -122,8 +123,9 @@ describe BufferManager, 'jump' do
     end
 
     it 'should restore the buffer' do
-      Snippet.should_receive(:new).with('', 'key').and_return(@snippet)
-      @snippet.should_receive(:insert_snippet)
+      StringInserter.should_receive(:new).with(@buffer, 'key', [1, 4]).
+        and_return(@string_inserter)
+      @string_inserter.should_receive(:insert_string)
       @manager.jump
     end
   end

@@ -147,7 +147,9 @@ class BufferManager
   # This method modifies the buffer!
   def restore_previous
     return unless @last_edited
-    Snippet.new('', previous_selection).insert_snippet
+    StringInserter.new(
+      @buffer, previous_selection, @window.cursor
+    ).insert_string
     @was_restored = true  # HACK
   end
 

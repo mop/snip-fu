@@ -75,6 +75,24 @@ describe "A BufferManager when jumping" do
     end
   end
 
+  describe "when handling multiline insertions with indentation" do
+    before(:each) do
+      Vim = stub_everything
+      i = (1..100).map { |i| "\n" }.join("")
+      @buffer = BufferStub.new(
+        "  it \"should description\" ${3:do\n    ${0}\n  end}"
+      )
+      @window = WindowStub.new(1, 4)
+      SnippetLoader.stub!(:new).and_return(snippet_loader_mock)
+      @buffer_manager = BufferManager.new(@window, @buffer)
+    end
+
+    it "should expand the multiline tag correctly" do
+      @buffer_manager.jump
+      @buffer[2].should == "    ${0}"
+    end
+  end
+
   def snippet_loader_mock
     @loader ||= create_snippet_loader
   end

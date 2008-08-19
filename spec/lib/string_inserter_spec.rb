@@ -1,5 +1,8 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 describe StringInserter do
+  before(:each) do
+    Vim = stub_everything
+  end
   describe 'insertion of simple strings' do
     before(:each) do
       @buffer = BufferStub.new("something")
@@ -70,6 +73,25 @@ describe StringInserter do
       @buffer.contents[1].should eql("with")
       @buffer.contents[2].should eql("multiple")
       @buffer.contents[3].should eql("lines")
+    end
+  end
+
+  describe "disabling of indents" do
+    before(:each) do
+      @buffer = BufferStub.new("something")
+    end
+  
+    it "should should disable indents before inserting" do
+      Vim.should_receive(:command).with("set indentexpr=\"\"")
+      Vim.should_receive(:command).with("set indentkeys=\"\"")
+      Vim.should_receive(:command).with("unlet b:did_indent")
+      StringInserter.new(@buffer, "multiple\nlines\nend", [1, 1]).insert_string
+    end
+
+    it "shoudl restore the filetype" do
+      Vim.stub!(:evaluate).with("&filetype").and_return(:filetype)
+      Vim.should_receive(:command).with("set filetype=filetype")
+      StringInserter.new(@buffer, "multiple\nlines\nend", [1, 1]).insert_string
     end
   end
 end

@@ -27,6 +27,7 @@ class StringInserter
   # @public
   def insert_string
     return if string == ""
+    disable_indent
     to_append = first_line_rest
     buffer[start_line] = first_line
 
@@ -34,9 +35,23 @@ class StringInserter
       line = "#{line}#{to_append}" if idx == 0
       buffer.append(start_line, line)
     end
+    enable_indent
   end
 
   private
+  # Disables the indentation of vim
+  def disable_indent
+  	@filetype = Vim.evaluate("&filetype")
+    Vim.command("set indentexpr=\"\"")
+    Vim.command("set indentkeys=\"\"")
+    Vim.command("unlet b:did_indent")
+  end
+
+  # Enables the indentation of vim
+  def enable_indent
+  	Vim.command("set filetype=#{@filetype}")
+  end
+
   # Returns the string splitted by \n as array
   #
   # ==== Returns
