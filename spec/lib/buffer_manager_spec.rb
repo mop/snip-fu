@@ -312,3 +312,57 @@ describe BufferManager, 'loading snippets' do
   end
 end
 
+describe BufferManager, 'yanking and restoring' do
+  before(:each) do
+    Vim = stub_everything
+    Vim.stub!(:evaluate).with("getreg()").and_return(:yank)
+    Vim.stub!(:command)
+    Vim.instance_eval do 
+      def command(arg)
+        @commands ||= []
+        @commands << arg
+      end
+
+      def received_commands
+        @commands
+      end
+    end
+
+    @buffer = BufferStub.new("for ${2:key} in ${2:val}")
+    @window = WindowStub.new(1, 3)
+
+    @snippet = mock('Snippet')
+    Snippet.stub!(:new).and_return(@snippet)
+
+    @loader  = mock('Loader', :current_snippets => [@snippet])
+    @loader.stub!(:load_snippets)
+    SnippetLoader.stub!(:new).and_return(@loader)
+
+    @manager = BufferManager.new(@window, @buffer)
+  end
+
+  it 'should save the yank after inserting an extended tag' do
+    Vim.should_receive(:evaluate).with("getreg()").and_return(:yank)
+    @manager.jump
+  end
+
+  it 'should restore the buffer after inserting an extended tag' do
+    @manager.jump
+    @buffer[1] = 'for  in ${2:val}'
+    @manager.jump
+    Vim.received_commands.include?(
+      'call setreg(v:register, "yank")'
+    ).should be_true
+  end
+
+  it 'should restore the buffer after the user made some inserts' do
+    @manager.jump
+    @buffer[1] = 'for custominsert in ${2:val}'
+    @window.cursor = [1, 15]
+    @manager.jump
+    Vim.received_commands.include?(
+      'call setreg(v:register, "yank")'
+    ).should be_true
+  end
+end
+

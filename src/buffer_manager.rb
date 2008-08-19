@@ -77,6 +77,7 @@ class BufferManager
   # ==== Notes
   # This method modifies the buffer.
   def rename_other
+    restore_yank if @was_restored || last_insert != ""
     Mirrorer.new(buffer, @last_edited[0], last_insert).mirror_tags!
   end
 
@@ -151,6 +152,14 @@ class BufferManager
     @was_restored = true  # HACK
   end
 
+  def restore_yank
+    Vim.command("call setreg(v:register, \"#{@yank}\")") if @yank
+  end
+
+  def save_yank
+    @yank = Vim.evaluate("getreg()")
+  end
+
   # Returns the previous selected word in an extended-tag. If the previous tag
   # was a regular tag "" is returned. If no tag was previously pressed, nil is
   # returned.
@@ -221,19 +230,20 @@ class BufferManager
   #   A string with a list of directions the cursor should walk in visual
   #   mode.
   def make_result(directions)
-    unless @last_edited[0].single_tag?
-      unless @last_edited[1] == 0
-        Vim::command(
-          "let result = \"\\<Esc>\\<Right>v#{directions}\\o\\<c-g>\""
-        ) 
-      else
-        Vim::command(
-          "let result = \"\\<Esc>\\v#{directions}\\o\\<c-g>\""
-        ) 
-      end
-    else
+    if @last_edited[0].single_tag?
       Vim::command("let result = \"VIM_HACK_NOTHING\"") # HACK
+      return
     end
+    save_yank
+    if @last_edited[1] == 0 # we are at the leftmost position in the buffer
+      Vim::command(
+        "let result = \"\\<Esc>\\v#{directions}\\o\\<c-g>\""
+      ) 
+      return
+    end
+    Vim::command(
+      "let result = \"\\<Esc>\\<Right>v#{directions}\\o\\<c-g>\""
+    ) 
   end
 
   # Positions the cursor on the given line on the position of match.

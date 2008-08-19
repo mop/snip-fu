@@ -31,11 +31,13 @@ VIM::command("function! JumpToMark()
     let result = \"\\<Tab>\"
   endif
   return result
-endfunction")
+endfunction
+
+")
 VIM::command("
 imap <silent> <script> <Tab> <C-R>=JumpToMark()<CR>
 ")
-# Thanks you, Felix Ingram :)
+# Thank you, Felix Ingram :)
 VIM::command("
 smap <unique> <Tab> i<BS><Tab>
 ")
