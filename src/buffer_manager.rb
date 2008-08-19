@@ -77,8 +77,6 @@ class BufferManager
   # ==== Notes
   # This method modifies the buffer.
   def rename_other
-    digit = @last_edited[0].digit_tag
-    digit_str = "${#{digit}}"
     Mirrorer.new(buffer, @last_edited[0], last_insert).mirror_tags!
   end
 
@@ -209,7 +207,7 @@ class BufferManager
   #   The snippet-tag which matched (e.g. ${1: something })
   def remove_mark(line_number, mark)
     inserter     = Inserter.new(line_number, mark, buffer)
-    @mark        = inserter.remove_tags_from_buffer!
+    mark         = inserter.remove_tags_from_buffer!
     directions   = inserter.key_directions
     @last_edited = [mark, inserter.start_pos, line_number]
     make_result(directions)

@@ -66,7 +66,7 @@ describe BufferManager, 'jump' do
     SnippetLoader.stub!(:new).and_return(@loader)
 
     @inserter = mock('inserter')
-    @inserter.stub!(:remove_tags_from_buffer!)
+    @inserter.stub!(:remove_tags_from_buffer!).and_return("${1:key}")
     @inserter.stub!(:key_directions).and_return("")
     @inserter.stub!(:start_pos)
     Inserter.stub!(:new).and_return(@inserter)
@@ -77,11 +77,13 @@ describe BufferManager, 'jump' do
     it 'should initialize the Inserter correctly' do
       Inserter.should_receive(:new).with(1, "${1:key}", @buffer).
         and_return(@inserter)
+      @inserter.stub!(:remove_tags_from_buffer!).and_return("${1:key}")
       @manager.jump
     end
 
     it 'should call remove_tags_from_buffer! for the inserter' do
-      @inserter.should_receive(:remove_tags_from_buffer!)
+      @inserter.should_receive(:remove_tags_from_buffer!).
+        and_return("${1:key}")
       @manager.jump
     end
 
@@ -98,6 +100,7 @@ describe BufferManager, 'jump' do
        'a regular tag'do
       @buffer = BufferStub.new("for key in ${0}")
       @window = WindowStub.new(1, 1)
+      @inserter.stub!(:remove_tags_from_buffer!).and_return("${0}")
       @manager.buffer = @buffer
       @manager.window = @window
       str = ""
@@ -144,6 +147,7 @@ describe BufferManager, 'jump' do
     it 'should should remove the tags correctly' do
       Inserter.should_receive(:new).with(1, "${1:k\nkey}", @buffer).
         and_return(@inserter)
+      @inserter.stub!(:remove_tags_from_buffer!).and_return("${1:k\nkey}")
       @manager.jump
     end
   end
@@ -156,7 +160,7 @@ describe BufferManager, 'restoring of same symbol' do
     @window = WindowStub.new(1, 1)
 
     @inserter = mock('inserter')
-    @inserter.stub!(:remove_tags_from_buffer!)
+    @inserter.stub!(:remove_tags_from_buffer!).and_return("${1:key}")
     @inserter.stub!(:key_directions).and_return("")
     @inserter.stub!(:start_pos)
     Inserter.stub!(:new).and_return(@inserter)
@@ -216,6 +220,7 @@ describe BufferManager, 'restoring of same symbol' do
       @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
       @cursor_backup = @window.cursor
       @window.cursor = [ 2, 3 ]
+      @inserter.stub!(:remove_tags_from_buffer!).and_return("${1}")
     end
 
     after(:each) do
