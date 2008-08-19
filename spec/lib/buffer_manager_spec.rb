@@ -315,7 +315,7 @@ end
 describe BufferManager, 'yanking and restoring' do
   before(:each) do
     Vim = stub_everything
-    Vim.stub!(:evaluate).with("getreg()").and_return(:yank)
+    Vim.stub!(:evaluate).with("getreg()").and_return('yank')
     Vim.stub!(:command)
     Vim.instance_eval do 
       def command(arg)
@@ -342,7 +342,7 @@ describe BufferManager, 'yanking and restoring' do
   end
 
   it 'should save the yank after inserting an extended tag' do
-    Vim.should_receive(:evaluate).with("getreg()").and_return(:yank)
+    Vim.should_receive(:evaluate).with("getreg()").and_return('yank')
     @manager.jump
   end
 
@@ -352,6 +352,16 @@ describe BufferManager, 'yanking and restoring' do
     @manager.jump
     Vim.received_commands.include?(
       'call setreg(v:register, "yank")'
+    ).should be_true
+  end
+
+  it 'should escape " when inserting it' do
+    Vim.stub!(:evaluate).with("getreg()").and_return('ya"nk')
+    @manager.jump
+    @buffer[1] = 'for  in ${2:val}'
+    @manager.jump
+    Vim.received_commands.include?(
+      'call setreg(v:register, "ya\"nk")'
     ).should be_true
   end
 

@@ -153,7 +153,7 @@ class BufferManager
   end
 
   def restore_yank
-    Vim.command("call setreg(v:register, \"#{@yank}\")") if @yank
+    Vim.command("call setreg(v:register, \"#{@yank.gsub(/"/, '\"')}\")") if @yank
   end
 
   def save_yank
