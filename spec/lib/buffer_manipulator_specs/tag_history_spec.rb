@@ -17,4 +17,14 @@ describe TagHistory do
     @history.start_pos = 10
     @history.start_pos.should == 10
   end
+
+  describe "a TagHistory object with some informationce" do
+    before(:each) do
+      
+    end
+
+    it "should have no information after calling clear" do
+      
+    end
+  end
 end

@@ -84,7 +84,9 @@ describe StringInserter do
     it "should should disable indents before inserting" do
       Vim.should_receive(:command).with("set indentexpr=\"\"")
       Vim.should_receive(:command).with("set indentkeys=\"\"")
-      Vim.should_receive(:command).with("unlet b:did_indent")
+      Vim.should_receive(:command).with(
+        "if exists(\"b:did_indent\")\n  unlet b:did_indent\nendif"
+      )
       StringInserter.new(@buffer, "multiple\nlines\nend", [1, 1]).insert_string
     end
 
