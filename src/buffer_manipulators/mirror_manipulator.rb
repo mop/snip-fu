@@ -12,8 +12,9 @@ class MirrorManipulator
   #   A TagHistory-object whose information will be used to mirror the tags
   def manipulate!(history)
   	@history = history
-    return unless @history.last_tag
+    return @history unless @history.last_tag
     Mirrorer.new(buffer, history.last_tag, last_insert).mirror_tags!
+    @history
   end
 
   private

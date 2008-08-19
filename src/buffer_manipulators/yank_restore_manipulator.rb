@@ -8,16 +8,16 @@ class YankRestoreManipulator
 
   def manipulate!(history)
   	@history = history
-    restore_yank if @history.was_restored? || last_edited != ""
+    #return @history unless @history.start_pos && @history.line_number &&
+    #  @history.last_tag.single_tag?
+    return @history if @history.start_pos.nil? || @history.line_number.nil? || 
+      @history.last_tag.single_tag?
+    restore_yank 
     @history
   end
 
   private
   def last_edited
-    if @history.was_restored?
-      @history.was_restored = false   # reset the flag
-      return @history.last_tag.without_tags
-    end
     StringExtractor.new(
       buffer, [@history.line_number, @history.start_pos], window.cursor
     ).extract_string

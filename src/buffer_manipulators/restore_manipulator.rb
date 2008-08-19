@@ -30,13 +30,15 @@ class RestoreManipulator
   # @public
   def manipulate!(history)
     @history = history
-    return if previous_edited?
+    return @history if previous_edited?
     do_manipulate
+    @history
   end
 
   private
   def previous_edited?
-    @history.last_tag.without_tags == "" || !same_cursor_position?
+    @history.last_tag.nil? || @history.last_tag.without_tags == "" || 
+      !same_cursor_position?
   end
 
   def same_cursor_position?

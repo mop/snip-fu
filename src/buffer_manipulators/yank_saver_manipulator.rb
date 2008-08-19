@@ -8,7 +8,8 @@ class YankSaverManipulator
   end
 
   def manipulate!(history)
-    history.yank = Vim.evaluate("getreg()") unless history.last_tag.single_tag?
+    history.yank = Vim.evaluate("getreg()") \
+      unless history.last_tag.single_tag? rescue nil
   	history
   end
 end
