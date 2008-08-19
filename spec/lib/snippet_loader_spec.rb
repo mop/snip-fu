@@ -12,7 +12,9 @@ describe 'A snippet loader' do
 	describe 'opening the snippet files' do
     before(:each) do
       File.stub!(:open).and_yield(file_mock)
-      Dir.stub!(:[]).and_return([:file1, :file2])
+      Dir.stub!(:[]).with(
+        ENV['HOME'] + '/.vim/snippets/**/*.xml'
+      ).and_return([:file1, :file2])
     end
     
 		it 'should scan the snippets directory' do
@@ -37,7 +39,9 @@ describe 'A snippet loader' do
 
 	describe 'parsing a snippet file' do
     before(:each) do
-      Dir.stub!(:[]).and_return([:file1])
+      Dir.stub!(:[]).with(
+        ENV['HOME'] + '/.vim/snippets/**/*.xml'
+      ).and_return([:file1])
       File.stub!(:open).with(:file1).and_yield(StringIO.new <<-EOF
 <snippet>
   <filetype>ruby</filetype>
@@ -70,7 +74,9 @@ end</command>
 
 	describe 'parsing multiple snippets' do
     before(:each) do
-      Dir.stub!(:[]).and_return([:file1, :file2, :file3])
+      Dir.stub!(:[]).with(
+        ENV['HOME'] + '/.vim/snippets/**/*.xml'
+      ).and_return([:file1, :file2, :file3])
       File.stub!(:open).with(:file1).and_yield(StringIO.new <<-EOF
 <snippet>
   <filetype>ruby</filetype>
