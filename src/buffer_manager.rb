@@ -100,14 +100,14 @@ class BufferManager
   def jump
     restore_previous if previous_not_edited?
     rename_other     if previous_selection
-    matches = buffer.buffer_lines.scan_snippets
+    matches = buffer.buffer_lines.scan_filtered_snippets
     return cleanup unless matches.size > 0
     
-    match = first_match(matches)
+    match       = first_match(matches)
     line_number = buffer.to_line_number(match)
     position_cursor(line_number, match.start_tag) 
     remove_mark(line_number, match)
-    cleanup if buffer.buffer_lines.scan_snippets.size == 0
+    cleanup if buffer.buffer_lines.scan_filtered_snippets.size == 0
   end
 
   # This method sorts the matches after the tag-number and returns the first

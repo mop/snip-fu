@@ -31,6 +31,25 @@ describe String, 'digit_tag-method' do
   
 end
 
+describe String, 'tag?-method' do
+  it 'should identify extended tags' do
+    p '${1:extended}'.tag?
+    '${1:extended}'.should be_tag
+  end
+
+  it 'should identify regular tags' do
+    '${1}'.should be_tag
+  end
+
+  it 'should return nil on translators' do
+    '${1/some/thing/g}'.should_not be_tag
+  end
+
+  it 'should return nil on non-tags' do
+    'no tag ${1}'.should_not be_tag
+  end
+end
+
 describe String, 'without_tags-method' do
   before(:each) do
     String.send(:include, GeditSnippetMatcher)

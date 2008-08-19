@@ -115,7 +115,24 @@ describe "A BufferManager when jumping" do
       @buffer_manager.jump
       @buffer[1].should == "for #{ENV['HOME']} in val"
     end
+  end
 
+  describe "when jumping to a tag after an translation tag" do
+    before(:each) do
+      Vim = stub_everything
+      @buffer = BufferStub.new(
+        "tim"
+      )
+      @window = WindowStub.new(1, 3)
+      SnippetLoader.stub!(:new).and_return(snippet_loader_mock)
+      @buffer_manager = BufferManager.new(@window, @buffer)
+    end
+
+    it 'should jump to the correct tag' do
+      @buffer_manager.handle_insert
+      @buffer_manager.jump
+      @buffer[1].should == "times { ${1/(^(?<var>\s*(?:\*|\*?[a-z_])[a-zA-Z0-9_]*\s*)(,\g<var>)*,?\s*$)|.*/(?1:|)/}n${1/(^(?<var>\s*(?:\*|\*?[a-z_])[a-zA-Z0-9_]*\s*)(,\g<var>)*,?\s*$)|.*/(?1:| )/}${0} }"
+    end
   end
 
   def snippet_loader_mock
@@ -145,6 +162,11 @@ describe "A BufferManager when jumping" do
       Snippet.new(
         "for",
         "for ${1:${HOME:default}} in ${2:val}",
+        @window, @buffer
+      ),
+      Snippet.new(
+        "tim",
+        "times { ${1/(^(?<var>\s*(?:\*|\*?[a-z_])[a-zA-Z0-9_]*\s*)(,\g<var>)*,?\s*$)|.*/(?1:|)/}${1:n}${1/(^(?<var>\s*(?:\*|\*?[a-z_])[a-zA-Z0-9_]*\s*)(,\g<var>)*,?\s*$)|.*/(?1:| )/}${0} }",
         @window, @buffer
       )
     ]

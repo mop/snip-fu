@@ -1,4 +1,6 @@
 require 'condition_parser'
+require 'rubygems'
+require 'oniguruma'
 # This class is responsible for replacing regular expressions
 # It formats regexps according to the given pattern.
 class RegexpHandler
@@ -18,8 +20,8 @@ class RegexpHandler
   # String::
   #   The translated text is returned.
   def replace
-    re = Regexp.new(regexp)
-    apply_conditionals(fold_cases(text.sub(re, format)))
+    re = Oniguruma::ORegexp.new(regexp)
+    apply_conditionals(fold_cases(re.sub(text, format)))
   end
 
   private
