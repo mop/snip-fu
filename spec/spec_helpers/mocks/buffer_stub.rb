@@ -1,5 +1,8 @@
+require 'buffer_util'
 # this class is a stub for the VIM-buffer
 class BufferStub
+  include BufferUtil
+
   attr_accessor :contents, :current_line
   def initialize(contents, current_line=1)
     @contents = contents.split("\n")
@@ -88,3 +91,4 @@ class BufferStub
     @contents.delete_at(num - 1)
   end
 end
+

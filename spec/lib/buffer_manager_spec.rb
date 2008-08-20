@@ -1,15 +1,13 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe BufferManager, 'update of window/buffer' do
+  include BufferManagerSpecHelper
   before(:each) do
     @window = mock('window')
     @buffer = mock('buffer')
-    @snippet = mock('Snippet')
-    Snippet.stub!(:new).and_return(@snippet)
 
-    @loader  = mock('Loader', :current_snippets => [@snippet])
-    @loader.stub!(:load_snippets)
-    SnippetLoader.stub!(:new).and_return(@loader)
+    @snippet = snippet_stub
+    @loader = loader_stub([@snippet])
 
     @manager = BufferManager.new(@window, @buffer)
   end
@@ -26,15 +24,13 @@ describe BufferManager, 'update of window/buffer' do
 end
 
 describe BufferManager, 'snippet insertion' do
+  include BufferManagerSpecHelper
   before(:each) do
     @buffer = BufferStub.new("for")
     @window = WindowStub.new(1, 3)
-    @snippet = mock('snippet')
-    Snippet.stub!(:new).and_return(@snippet)
 
-    @loader  = mock('Loader', :current_snippets => [@snippet])
-    @loader.stub!(:load_snippets)
-    SnippetLoader.stub!(:new).and_return(@loader)
+    @snippet = snippet_stub
+    @loader  = loader_stub([@snippet])
 
     @manager = BufferManager.new(@window, @buffer)
   end
@@ -52,24 +48,19 @@ describe BufferManager, 'snippet insertion' do
 end
 
 describe BufferManager, 'jump' do
+  include VimSpecHelper
+  include BufferManagerSpecHelper
   before(:each) do
-    Vim = stub_everything(:evaluate => ' ')
+    stub_vim
     @buffer = BufferStub.new("for ${1:key} in ${2:val}")
     @window = WindowStub.new(1, 1)
-    @snippet = mock('Snippet', :buffer= => nil, :window= => nil)
-    @snippet.stub!(:pressed?).and_return(false)
-
-    Snippet.stub!(:new).and_return(@snippet)
-
-    @loader  = mock('Loader', :current_snippets => [@snippet])
-    @loader.stub!(:load_snippets)
-    SnippetLoader.stub!(:new).and_return(@loader)
-
-    @inserter = mock('inserter')
-    @inserter.stub!(:remove_tags_from_buffer!).and_return("${1:key}")
-    @inserter.stub!(:key_directions).and_return("")
-    @inserter.stub!(:start_pos)
-    Inserter.stub!(:new).and_return(@inserter)
+    @snippet = snippet_stub(
+      :pressed? => false,
+      :buffer= => nil,
+      :window= => nil
+    )
+    @loader  = loader_stub([@snippet])
+    @inserter = inserter_stub("${1:key}")
     @manager = BufferManager.new(@window, @buffer)
   end
 
@@ -116,7 +107,8 @@ describe BufferManager, 'jump' do
       @backup = @buffer.contents[0]
       @buffer.contents[0] = "for  in ${2:val}"
       @window.cursor = [1, 4]
-      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @history = TagHistory.new("${1:key}", 1, 4)
+      @manager.instance_variable_set(:@history, @history)
       @string_inserter = mock("string inserter")
     end
 
@@ -154,30 +146,30 @@ describe BufferManager, 'jump' do
 end
 
 describe BufferManager, 'restoring of same symbol' do
+  include VimSpecHelper
+  include BufferManagerSpecHelper
   before(:each) do
-    Vim = stub_everything
+    stub_vim
     @buffer = BufferStub.new("for ${1:key} in ${2:val}")
     @window = WindowStub.new(1, 1)
 
-    @inserter = mock('inserter')
-    @inserter.stub!(:remove_tags_from_buffer!).and_return("${1:key}")
-    @inserter.stub!(:key_directions).and_return("")
-    @inserter.stub!(:start_pos)
-    Inserter.stub!(:new).and_return(@inserter)
+    @inserter = inserter_stub("${1:key}")
+    @loader   = loader_stub([@snippet])
 
-    @loader  = mock('Loader', :current_snippets => [@snippet])
-    @loader.stub!(:load_snippets)
-    SnippetLoader.stub!(:new).and_return(@loader)
-
+    @history = TagHistory.new
     @manager = BufferManager.new(@window, @buffer)
+    @manager.instance_variable_set(:@history, @history)
   end
 
   describe 'restoring via template' do
     before(:each) do
       @backup = @buffer.contents
       @buffer.contents[0] = "for  ${1}"
-      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
-      @manager.instance_variable_set(:@was_restored, true)
+      @history.clear
+      @history.last_tag = "${1:key}"
+      @history.start_pos = 4
+      @history.line_number = 1
+      @history.was_restored = true
     end
 
     after(:each) do
@@ -195,7 +187,8 @@ describe BufferManager, 'restoring of same symbol' do
     before(:each) do
       @backup = @buffer.contents
       @buffer.contents[0] = "for wohoo ${1}"
-      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @history = TagHistory.new("${1:key}", 1, 4)
+      @manager.instance_variable_set(:@history, @history)
       @cursor_backup = @window.cursor
       @window.cursor = [ 1, 9 ]
     end
@@ -217,7 +210,8 @@ describe BufferManager, 'restoring of same symbol' do
       @backup = @buffer.contents
       @buffer.contents[0] = "for wo"
       @buffer.contents[1] = "hoo something ${1}"
-      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
+      @history = TagHistory.new("${1:key}", 1, 4)
+      @manager.instance_variable_set(:@history, @history)
       @cursor_backup = @window.cursor
       @window.cursor = [ 2, 3 ]
       @inserter.stub!(:remove_tags_from_buffer!).and_return("${1}")
@@ -237,13 +231,12 @@ describe BufferManager, 'restoring of same symbol' do
   end
 
   describe 'mirroring extended tags' do
+    include BufferManagerSpecHelper
     before(:each) do
       @backup = @buffer.contents
       @buffer.contents[0] = "for wo"
       @buffer.contents[1] = "hoo something ${1:someotherkey}"
-      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
-      @cursor_backup = @window.cursor
-      @window.cursor = [ 2, 3 ]
+      history_stub!
     end
 
     after(:each) do
@@ -264,9 +257,7 @@ describe BufferManager, 'restoring of same symbol' do
       @backup = @buffer.contents
       @buffer.contents[0] = "for wo"
       @buffer.contents[1] = "hoo something ${1/wo/zomg/g}"
-      @manager.instance_variable_set(:@last_edited, [ "${1:key}", 4, 1 ])
-      @cursor_backup = @window.cursor
-      @window.cursor = [ 2, 3 ]
+      history_stub!
     end
 
     after(:each) do
@@ -313,46 +304,30 @@ describe BufferManager, 'loading snippets' do
 end
 
 describe BufferManager, 'yanking and restoring' do
+  include VimSpecHelper
+  include BufferManagerSpecHelper
   before(:each) do
-    Vim = stub_everything
-    Vim.stub!(:evaluate).with("getreg()").and_return('yank')
-    Vim.stub!(:command)
-    Vim.instance_eval do 
-      def command(arg)
-        @commands ||= []
-        @commands << arg
-      end
-
-      def received_commands
-        @commands
-      end
-    end
+    stub_vim
 
     @buffer = BufferStub.new("for ${2:key} in ${2:val}")
     @window = WindowStub.new(1, 3)
 
-    @snippet = mock('Snippet')
-    Snippet.stub!(:new).and_return(@snippet)
-
-    @loader  = mock('Loader', :current_snippets => [@snippet])
-    @loader.stub!(:load_snippets)
-    SnippetLoader.stub!(:new).and_return(@loader)
+    @snippet = snippet_stub
+    @loader  = loader_stub([@snippet])
 
     @manager = BufferManager.new(@window, @buffer)
   end
 
   it 'should save the yank after inserting an extended tag' do
-    Vim.should_receive(:evaluate).with("getreg()").and_return('yank')
     @manager.jump
+    Vim.received_evaluates.should include("getreg()")
   end
 
   it 'should restore the buffer after inserting an extended tag' do
     @manager.jump
     @buffer[1] = 'for  in ${2:val}'
     @manager.jump
-    Vim.received_commands.include?(
-      'call setreg(v:register, "yank")'
-    ).should be_true
+    Vim.received_commands.should include('call setreg(v:register, "yank")')
   end
 
   it 'should escape " when inserting it' do
@@ -360,9 +335,7 @@ describe BufferManager, 'yanking and restoring' do
     @manager.jump
     @buffer[1] = 'for  in ${2:val}'
     @manager.jump
-    Vim.received_commands.include?(
-      'call setreg(v:register, "ya\"nk")'
-    ).should be_true
+    Vim.received_commands.should include('call setreg(v:register, "ya\"nk")')
   end
 
   it 'should restore the buffer after the user made some inserts' do
