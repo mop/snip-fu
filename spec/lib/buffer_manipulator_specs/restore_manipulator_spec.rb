@@ -1,12 +1,13 @@
 require File.dirname(__FILE__) + '/../../spec_helper'
 
 describe 'A RestoreManipulator' do
+  include VimSpecHelper
   def window
     @window ||= WindowStub.new(1, 4)
   end
 
   before(:each) do
-    Vim = stub_everything
+    stub_vim
     @manipulator = RestoreManipulator.new
   end
 

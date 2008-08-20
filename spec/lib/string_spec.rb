@@ -33,7 +33,6 @@ end
 
 describe String, 'tag?-method' do
   it 'should identify extended tags' do
-    p '${1:extended}'.tag?
     '${1:extended}'.should be_tag
   end
 

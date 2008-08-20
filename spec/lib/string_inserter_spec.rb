@@ -1,7 +1,8 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 describe StringInserter do
+  include VimSpecHelper
   before(:each) do
-    Vim = stub_everything
+    stub_vim
   end
   describe 'insertion of simple strings' do
     before(:each) do

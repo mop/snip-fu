@@ -1,7 +1,9 @@
 require File.dirname(__FILE__) + "/../../spec_helper.rb"
 
 describe 'A YankSaverManipulator' do
+  include VimSpecHelper
   before(:each) do
+    stub_vim
     @manipulator = YankSaverManipulator.new
   end
 
@@ -9,7 +11,6 @@ describe 'A YankSaverManipulator' do
 
 	describe 'after inserting an extended tag' do
     before(:each) do
-    	Vim = stub_everything
       @manipulator = YankSaverManipulator.new
       @history = TagHistory.new("${1:extended}", 1, 1)
     end
@@ -23,7 +24,6 @@ describe 'A YankSaverManipulator' do
 
 	describe 'after inserting an regular tag' do
     before(:each) do
-    	Vim = stub_everything
       @manipulator = YankSaverManipulator.new
       @history = TagHistory.new("${1}", 1, 1)
     end

@@ -1,25 +1,17 @@
 require File.dirname(__FILE__) + '/../../spec_helper'
 
 describe 'A JumperManipulator' do
+  include VimSpecHelper
+  
   before(:each) do
-    Vim = stub_everything
+    stub_vim
     @manipulator = JumperManipulator.new
   end
   it_should_behave_like "a buffer manipulator"
 
 	describe 'when jumping to an extended tag' do
     before(:each) do
-      Vim = stub_everything
-      Vim.instance_eval do
-        def command(arg)
-          @commands ||= []
-          @commands << arg
-        end
-
-        def received_commands
-          @commands
-        end
-      end
+      stub_vim
       @buffer = BufferStub.new("for ${1:key} in ${2:val}")
       @window = WindowStub.new(1, 1)
       @history = TagHistory.new
@@ -42,7 +34,6 @@ describe 'A JumperManipulator' do
     end
 
 		it 'should use an inserter-object to return a result to vi' do
-      p Vim.received_commands
       Vim.received_commands.include?(
         "let result = \"\\<Esc>\\<Right>v\\<Right>\\<Right>\\o\\<c-g>\""
       ).should be_true
@@ -51,17 +42,7 @@ describe 'A JumperManipulator' do
 
 	describe 'when jumping to an regular tag' do
     before(:each) do
-      Vim = stub_everything
-      Vim.instance_eval do
-        def command(arg)
-          @commands ||= []
-          @commands << arg
-        end
-
-        def received_commands
-          @commands
-        end
-      end
+      stub_vim
       @buffer = BufferStub.new("for ${1} in ${2:val}")
       @window = WindowStub.new(1, 1)
       @history = TagHistory.new
@@ -92,7 +73,7 @@ describe 'A JumperManipulator' do
 
 	describe 'when no tags are found in the buffer' do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       @buffer = BufferStub.new("for")
       @window = WindowStub.new(1, 1)
       @history = TagHistory.new("something", 1, 1)
@@ -108,7 +89,7 @@ describe 'A JumperManipulator' do
 	describe 'when no tags are left in the buffer after removing tags' + 
            ' from the buffer' do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       @buffer = BufferStub.new("for ${1}")
       @window = WindowStub.new(1, 1)
       @history = TagHistory.new("something", 1, 1)

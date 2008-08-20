@@ -1,8 +1,9 @@
 require File.dirname(__FILE__) + '/../spec_helper.rb'
 
 describe 'a command preprocessor' do
+  include VimSpecHelper
   before(:each) do
-    Vim = mock("VIM")
+    stub_vim
   end
   
 	describe 'variable replacement' do

@@ -52,8 +52,9 @@ describe BufferManager, 'snippet insertion' do
 end
 
 describe BufferManager, 'jump' do
+  include VimSpecHelper
   before(:each) do
-    Vim = stub_everything(:evaluate => ' ')
+    stub_vim
     @buffer = BufferStub.new("for ${1:key} in ${2:val}")
     @window = WindowStub.new(1, 1)
     @snippet = mock('Snippet', :buffer= => nil, :window= => nil)
@@ -155,8 +156,9 @@ describe BufferManager, 'jump' do
 end
 
 describe BufferManager, 'restoring of same symbol' do
+  include VimSpecHelper
   before(:each) do
-    Vim = stub_everything
+    stub_vim
     @buffer = BufferStub.new("for ${1:key} in ${2:val}")
     @window = WindowStub.new(1, 1)
 
@@ -323,30 +325,9 @@ describe BufferManager, 'loading snippets' do
 end
 
 describe BufferManager, 'yanking and restoring' do
+  include VimSpecHelper
   before(:each) do
-    Vim = stub_everything
-    Vim.stub!(:evaluate).with("getreg()").and_return('yank')
-    Vim.stub!(:command)
-    Vim.instance_eval do 
-      def command(arg)
-        @commands ||= []
-        @commands << arg
-      end
-
-      def evaluate(arg)
-        @evaluates ||= []
-        @evaluates << arg
-        'yank'
-      end
-
-      def received_commands
-        @commands
-      end
-
-      def received_evaluates
-        @evaluates
-      end
-    end
+    stub_vim
 
     @buffer = BufferStub.new("for ${2:key} in ${2:val}")
     @window = WindowStub.new(1, 3)

@@ -4,9 +4,6 @@ module GeditSnippetMatcher
   end
 
   module GeditSnippetMatcherMethods
-    START_TAG = "${"
-    END_TAG   = "}"
-
     # Removes the tags from the string and returns a new string 
     # without tags.
     #

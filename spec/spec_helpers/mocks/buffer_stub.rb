@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../src/buffer_util'
+require 'buffer_util'
 # this class is a stub for the VIM-buffer
 class BufferStub
   include BufferUtil

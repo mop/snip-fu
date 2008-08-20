@@ -1,9 +1,10 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "A BufferManager when jumping" do
+  include VimSpecHelper
   describe "when handling a nested def" do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       @buffer = BufferStub.new("def")
       @window = WindowStub.new(1, 3)
       SnippetLoader.stub!(:new).and_return(snippet_loader_mock)
@@ -30,7 +31,7 @@ describe "A BufferManager when jumping" do
 
   describe "when handling an it from rspec-bundle" do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       @buffer = BufferStub.new("it")
       @window = WindowStub.new(1, 2)
       SnippetLoader.stub!(:new).and_return(snippet_loader_mock)
@@ -56,7 +57,7 @@ describe "A BufferManager when jumping" do
 
   describe "when handling a big insertion at the end" do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       i = (1..100).map { |i| "\n" }.join("")
       @buffer = BufferStub.new("#{i}def", 101)
       @window = WindowStub.new(101, 3)
@@ -77,7 +78,7 @@ describe "A BufferManager when jumping" do
 
   describe "when handling multiline insertions with indentation" do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       @buffer = BufferStub.new(
         "  it \"should description\" ${3:do\n    ${0}\n  end}"
       )
@@ -94,7 +95,7 @@ describe "A BufferManager when jumping" do
 
   describe "when applying transformations to tags" do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       @buffer = BufferStub.new(
         "for"
       )
@@ -119,7 +120,7 @@ describe "A BufferManager when jumping" do
 
   describe "when jumping to a tag after an translation tag" do
     before(:each) do
-      Vim = stub_everything
+      stub_vim
       @buffer = BufferStub.new(
         "tim"
       )

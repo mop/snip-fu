@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe 'A snippet loader' do
+  include VimSpecHelper
   before(:each) do
     @loader = SnippetLoader.new
   end
@@ -130,7 +131,7 @@ end</command>
 
   describe 'current_snippets method' do
     before(:each) do
-      Vim = mock('vim')
+      stub_vim
       Vim.stub!(:evaluate).and_return('ruby')
       @snippet_loader = SnippetLoader.new
       @snippet_loader.instance_variable_set(:@snippets, { 

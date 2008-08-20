@@ -1,13 +1,9 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe Snippet, 'pressed?' do
+  include SnippetSpecHelper
   before(:each) do
-    @snippet = Snippet.new(
-      "for",
-      "for ${0:key} in ${1:vals}\n${2}\nend\n${3}",
-      WindowStub.new(1, 3),
-      BufferStub.new("for")
-    )
+    @snippet = fetch_snippet(:for)
   end
 
   it 'should return true for pressed?' do
@@ -36,17 +32,14 @@ describe Snippet, 'pressed?' do
 end
 
 describe Snippet, 'insert multi line snippets' do
+  include SnippetSpecHelper
+  include VimSpecHelper
   before(:each) do
-    Vim = mock('vim')
+    stub_vim
     Vim.stub!(:command).and_return(' ')
     Vim.stub!(:evaluate).and_return(' ')
     @buffer = BufferStub.new("for")
-    @snippet = Snippet.new(
-      "for",
-      "for ${0:key} in ${1:vals}\n${2}\nend\n${3}",
-      WindowStub.new(1, 3),
-      @buffer
-    )
+    @snippet = fetch_snippet(:for, @buffer)
   end
 
   it 'should insert the snippet correctly' do
@@ -68,14 +61,10 @@ describe Snippet, 'insert multi line snippets' do
 end
 
 describe Snippet, 'insert single line snippets' do
+  include SnippetSpecHelper
   before(:each) do
     @buffer = BufferStub.new("aftp")
-    @snippet = Snippet.new(
-      "aftp",
-      "after Proc.new { |c| ${1:c.some_method} }${2:, :${10:only} =&gt; ${11:[${12::login, :signup}]}}",
-      WindowStub.new(1, 4),
-      @buffer
-    )
+    @snippet = fetch_snippet(:aftp, @buffer)
   end
 
   it 'should insert the snippet correctly' do
@@ -95,19 +84,16 @@ describe Snippet, 'insert single line snippets' do
 end
 
 describe Snippet, 'insert tabs' do
+  include SnippetSpecHelper
+  include VimSpecHelper
   before(:each) do
-    Vim = mock('vim')
+    stub_vim
     Vim.stub!(:evaluate).with('&expandtab').and_return('1')
     Vim.stub!(:command)
     Vim.stub!(:evaluate).with('tabs').and_return('1')
     Vim.stub!(:evaluate).with('tabstr').and_return('  ')
     @buffer = BufferStub.new('for')
-    @snippet = Snippet.new(
-      "for",
-      "for ${0:key} in ${1:vals}\n${2}\nend\n${3}",
-      WindowStub.new(1, 3),
-      @buffer
-    )
+    @snippet = fetch_snippet(:for, @buffer)
   end
 
   it 'should indent the command correctly' do

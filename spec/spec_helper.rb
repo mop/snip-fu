@@ -2,14 +2,12 @@ require 'rubygems'
 require 'spec'
 $:.unshift(File.dirname(__FILE__) + '/../src')
 
-Dir[File.dirname(__FILE__) + '/../src/**/*.rb'].each do |file|
+dir = File.dirname(__FILE__)
+Dir["#{dir}/../src/**/*.rb"].each do |file|
   require file unless file =~ /vim-snippet/
 end
 
-Dir[File.dirname(__FILE__) + '/mocks/**/*.rb'].each do |file|
-  require file 
-end
+require "#{dir}/spec_helpers/mocks"
+require "#{dir}/spec_helpers/behaviours"
+require "#{dir}/spec_helpers/shared_behaviours"
 
-Dir[File.dirname(__FILE__) + '/shared_behaviours/**/*.rb'].each do |file|
-  require file 
-end

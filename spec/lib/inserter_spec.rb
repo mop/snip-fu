@@ -1,8 +1,9 @@
 require File.dirname(__FILE__) + '/../spec_helper.rb'
 
 describe 'A Inserter with an extended tag' do
+  include VimSpecHelper
   before(:each) do
-    Vim = stub_everything
+    stub_vim
     @buffer   = BufferStub.new(
       "some line before\nsome string for ${1:key} after\nnextline"
     )
