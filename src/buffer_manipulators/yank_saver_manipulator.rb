@@ -1,11 +1,9 @@
+require File.dirname(__FILE__) + '/manipulator_helper'
+
 # This class is responsible for storing the yank-position in the TagHistory if
 # the inserted tag was an extended tag.
 class YankSaverManipulator 
-  attr_accessor :window, :buffer
-	def initialize(window=nil, buffer=nil)
-  	@window = window
-    @buffer = buffer
-  end
+  include ManipulatorHelper
 
   def manipulate!(history)
     history.yank = Vim.evaluate("getreg()") \

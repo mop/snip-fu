@@ -1,10 +1,7 @@
-class YankRestoreManipulator  
-  attr_accessor :window, :buffer
+require File.dirname(__FILE__) + '/manipulator_helper'
 
-	def initialize(window=nil, buffer=nil)
-    @window = window
-    @buffer = buffer
-  end
+class YankRestoreManipulator  
+  include ManipulatorHelper
 
   def manipulate!(history)
   	@history = history

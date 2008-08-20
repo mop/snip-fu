@@ -1,24 +1,12 @@
 require File.dirname(__FILE__) + '/../string_inserter'
+require File.dirname(__FILE__) + '/manipulator_helper'
 
 # This class is responsible for restoring the buffer if it wasn't edited by the
 # user. The VI-editor actually deletes our insertion after pressing <Tab> if
 # the cursor is placed on a placeholder. Thus we must restore it if the user
 # wants to keep the default value.
 class RestoreManipulator
-  attr_accessor :window, :buffer
-  # Initializes the manipulator with a given window and a given buffer.
-  #
-  # ==== Parameters
-  # window<Vim::Window>::
-  #   The Vim-Window
-  # buffer<Vim::Buffer>::
-  #   The Vim-Buffer
-  # ---
-  # @public
-  def initialize(window=nil, buffer=nil)
-    @window = window
-    @buffer = buffer
-  end
+  include ManipulatorHelper
 
   # Manipulates the buffer with the given history object
   #

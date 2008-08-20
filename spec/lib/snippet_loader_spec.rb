@@ -8,6 +8,42 @@ describe 'A snippet loader' do
   def file_mock
     @file_mock ||= mock('file')
   end
+
+  def for_snippet 
+    <<-EOF
+<snippet>
+  <filetype>ruby</filetype>
+  <key>for</key>
+  <command>for ${1:command}
+  ${0}
+end</command>
+</snippet>
+    EOF
+  end
+
+  def rb_def_snippet
+    <<-EOF
+<snippet>
+  <filetype>ruby</filetype>
+  <key>def</key>
+  <command>def ${1:methodName}
+  ${0}
+end</command>
+</snippet>
+    EOF
+  end
+
+  def py_def_snippet
+    <<-EOF
+<snippet>
+  <filetype>python</filetype>
+  <key>def</key>
+  <command>def ${1:methodName}(self${2:params})
+  ${0}
+end</command>
+</snippet>
+    EOF
+  end
   
 	describe 'opening the snippet files' do
     before(:each) do
@@ -42,16 +78,7 @@ describe 'A snippet loader' do
       Dir.stub!(:[]).with(
         ENV['HOME'] + '/.vim/snippets/**/*.xml'
       ).and_return([:file1])
-      File.stub!(:open).with(:file1).and_yield(StringIO.new <<-EOF
-<snippet>
-  <filetype>ruby</filetype>
-  <key>for</key>
-  <command>for ${1:command}
-  ${0}
-end</command>
-</snippet>
-      EOF
-      )
+      File.stub!(:open).with(:file1).and_yield(StringIO.new(for_snippet))
       Snippet.stub!(:new).and_return(:snippet)
     end
     
@@ -77,36 +104,9 @@ end</command>
       Dir.stub!(:[]).with(
         ENV['HOME'] + '/.vim/snippets/**/*.xml'
       ).and_return([:file1, :file2, :file3])
-      File.stub!(:open).with(:file1).and_yield(StringIO.new <<-EOF
-<snippet>
-  <filetype>ruby</filetype>
-  <key>for</key>
-  <command>for ${1:command}
-  ${0}
-end</command>
-</snippet>
-      EOF
-      )
-      File.stub!(:open).with(:file2).and_yield(StringIO.new <<-EOF
-<snippet>
-  <filetype>ruby</filetype>
-  <key>def</key>
-  <command>def ${1:methodName}
-  ${0}
-end</command>
-</snippet>
-      EOF
-      )
-      File.stub!(:open).with(:file3).and_yield(StringIO.new <<-EOF
-<snippet>
-  <filetype>python</filetype>
-  <key>def</key>
-  <command>def ${1:methodName}(self${2:params})
-  ${0}
-end</command>
-</snippet>
-      EOF
-      )
+      File.stub!(:open).with(:file1).and_yield(StringIO.new(for_snippet))
+      File.stub!(:open).with(:file2).and_yield(StringIO.new(rb_def_snippet))
+      File.stub!(:open).with(:file3).and_yield(StringIO.new(py_def_snippet))
       Snippet.stub!(:new).with('for', "for ${1:command}\n  ${0}\nend").
         and_return(:snippet1)
       Snippet.stub!(:new).with('def', "def ${1:methodName}\n  ${0}\nend").

@@ -1,21 +1,11 @@
 require File.dirname(__FILE__) + '/../string_inserter'
 require File.dirname(__FILE__) + '/../matcher'
+require File.dirname(__FILE__) + '/manipulator_helper'
 
 String.send(:include, GeditSnippetMatcher)
 
 class JumperManipulator   
-	attr_accessor :window, :buffer
-  def initialize(window=nil, buffer=nil)
-  	@window = window
-    @buffer = buffer
-    monkey_patch_buffer!
-  end
-
-  def buffer=(buf)
-    @buffer = buf
-    monkey_patch_buffer!
-    @buffer
-  end
+  include ManipulatorHelper
 
   # Jumps to the next tag in the buffer. If the tag is an extended tag, it'll
   # mark the contents of the tag with the cursor. 

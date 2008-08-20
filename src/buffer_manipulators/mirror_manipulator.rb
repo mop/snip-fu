@@ -1,9 +1,7 @@
+require File.dirname(__FILE__) + '/manipulator_helper'
+
 class MirrorManipulator
-  attr_accessor :window, :buffer
-	def initialize(window=nil, buffer=nil)
-    @window = window
-    @buffer = buffer
-  end
+  include ManipulatorHelper
 
   # Manipulates the buffer with the given history object.
   #
