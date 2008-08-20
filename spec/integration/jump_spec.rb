@@ -89,7 +89,10 @@ describe "A BufferManager when jumping" do
 
     it "should expand the multiline tag correctly" do
       @buffer_manager.jump
+      @buffer[1].should == "  it \"should description\" do"
       @buffer[2].should == "    ${0}"
+      @buffer[3].should == "  end"
+      @buffer[4].should be_nil
     end
   end
 

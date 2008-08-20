@@ -25,7 +25,7 @@ class Snippet
   # ---
   # @public
   def pressed?
-    last_word == @key
+    last_word == @key && position_valid?
   end
   
   # Inserts the snippet on the cursor-position. If the command is multiple
@@ -33,21 +33,23 @@ class Snippet
   # ---
   # @public
   def insert_snippet
-    @command_backup = @command
-    @command = CommandFormatter.new(@command).format
-    after       = after_command
-    buffer.line = first_command_line
-
-    splitted_command[1..splitted_command.size].reverse.
-      each_with_index do |c, i| 
-
-      c = "#{c}#{after}" if i == 0
-      buffer.append(buffer.line_number, "#{tab_prefix}#{c}")
-    end
-    @command = @command_backup
+    remove_key
+    insert_string = CommandFormatter.new(@command).format
+    StringInserter.new(
+      @buffer,
+      insert_string.gsub("\n", "\n#{tab_prefix}"),
+      [ window.cursor[0], last_word_start ]
+    ).insert_string
   end
 
   private
+  # Removes the pressed key-word from the buffer.
+  def remove_key
+    str = @buffer.line
+    str[last_word_start, @key.size] = ""
+    @buffer.line = str
+  end
+
   # Returns the window-buffer
   #
   # ==== Returns
@@ -65,42 +67,6 @@ class Snippet
   #   into the vi-buffer.
   def splitted_command
     @command.split("\n")
-  end
-
-  # Returns the first line of the command, inserted into the vi-buffer, is
-  # returned. It should be assigned to the vi-buffer.
-  # If the command is a multiline-command, the string after the command is
-  # discarded.
-  #
-  # ==== Returns
-  # String::
-  #   The first line of the command, inserted into the vi-buffer is returned.
-  def first_command_line
-    str = buffer.line.dup
-    if multiline?
-      str[last_word_start, str.size]  = splitted_command.first
-    else
-      str[last_word_start, @key.size] = splitted_command.first
-    end
-    str
-  end
-
-  # Returns the string after the command in the first line
-  # ==== Returns
-  # String::
-  #   A string is returned which contains the string after the command in the
-  #   first line.
-  def after_command
-    buffer.line[cursor_column, buffer.line.size]
-  end
-
-  # Returns true if the command is a multiline command
-  #
-  # ==== Returns
-  # Bool::
-  #   True if the command is multiple lines long, otherwise false.
-  def multiline?
-    splitted_command.size > 1
   end
 
   # Returns the last "word" in the vi-buffer
@@ -129,6 +95,28 @@ class Snippet
   #   The position is returned as Fixnum.
   def last_word_start
     cursor_column - @key.size 
+  end
+
+  # Returns true if before the actual key-word is no alphanumeric character
+  #
+  # ==== Returns
+  # Bool::
+  #   True if there is no alphanumeric character before the key-word in the
+  #   buffer.
+  def position_valid?
+    pos_valid?(last_word_start - 1) && 
+    pos_valid?(cursor_column)
+  end
+
+  # Returns true if the given position is valid
+  #
+  # ==== Returns
+  # Bool::
+  #   True if there is no alphanumeric character before the key-word in the
+  #   buffer.
+  def pos_valid?(pos)
+    return true if buffer.line.size <= pos || pos < 0
+    (buffer.line[pos].chr =~ /[a-zA-Z0-9]/).nil?
   end
 
   # Returs the tab-prefix for the current line, which should be inserted 

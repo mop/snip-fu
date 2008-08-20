@@ -15,7 +15,7 @@ describe Snippet, 'pressed?' do
       @snippet.instance_variable_set(:@window, WindowStub.new(1, 1))
     end
 
-    it 'shouldn\'t be pressed anymore' do
+    it 'should not be pressed anymore' do
       @snippet.should_not be_pressed
     end
   end
@@ -25,6 +25,28 @@ describe Snippet, 'pressed?' do
       @snippet.instance_variable_set(:@buffer, BufferStub.new("while"))
     end
     
+    it 'should not be pressed anymore' do
+      @snippet.should_not be_pressed
+    end
+  end
+
+  describe 'when having some letters before the snippet' do
+    before(:each) do
+      @snippet.instance_variable_set(:@buffer, BufferStub.new("somethingfor"))
+      @snippet.instance_variable_set(:@window, WindowStub.new(1, 12))
+    end
+
+    it 'should not be pressed anymore' do
+      @snippet.should_not be_pressed
+    end
+  end
+
+  describe 'when having some letters after the snippet' do
+    before(:each) do
+      @snippet.instance_variable_set(:@buffer, BufferStub.new("forsomething"))
+      @snippet.instance_variable_set(:@window, WindowStub.new(1, 3))
+    end
+
     it 'should not be pressed anymore' do
       @snippet.should_not be_pressed
     end
