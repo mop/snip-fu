@@ -5,17 +5,7 @@ describe 'A JumperManipulator' do
     Vim = stub_everything
     @manipulator = JumperManipulator.new
   end
-	it 'should be able to assign a window' do 
-    buffer = mock('buffer')
-  	@manipulator.buffer = buffer
-    @manipulator.buffer.should == buffer 
-  end
-
-	it 'should be able to assign a buffer' do 
-  	window = mock('window')
-    @manipulator.window = window
-    @manipulator.window.should == window 
-  end
+  it_should_behave_like "a buffer manipulator"
 
 	describe 'when jumping to an extended tag' do
     before(:each) do

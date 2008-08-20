@@ -9,23 +9,15 @@ describe "a mirror manipulator " do
   end
 
   before(:each) do
-    @mirrorer = MirrorManipulator.new
+    @manipulator = MirrorManipulator.new
   end
 
-  it "should be able to update it's window" do 
-    @mirrorer.window = window
-    @mirrorer.window.should == window
-  end
-
-  it "should be able to update it's buffer " do
-    @mirrorer.buffer = buffer
-    @mirrorer.buffer.should == buffer 
-  end
+  it_should_behave_like "a buffer manipulator"
 
   describe "when an item was previously edited" do
     before(:each) do
-      @mirrorer.window = window
-      @mirrorer.buffer = buffer
+      @manipulator.window = window
+      @manipulator.buffer = buffer
 
       @mirror = stub("Mirroer")
       Mirrorer.stub!(:new).and_return(@mirror)
@@ -37,14 +29,14 @@ describe "a mirror manipulator " do
         @mirror
       )
       @mirror.should_receive(:mirror_tags!)
-      @mirrorer.manipulate!(@history)
+      @manipulator.manipulate!(@history)
     end
   end
 
   describe "when the item was previously restored" do
     before(:each) do
-      @mirrorer.window = window
-      @mirrorer.buffer = buffer
+      @manipulator.window = window
+      @manipulator.buffer = buffer
 
       @mirror = stub("Mirroer")
       Mirrorer.stub!(:new).and_return(@mirror)
@@ -57,14 +49,14 @@ describe "a mirror manipulator " do
         @mirror
       )
       @mirror.should_receive(:mirror_tags!)
-      @mirrorer.manipulate!(@history)
+      @manipulator.manipulate!(@history)
     end
   end
 
   describe "when nothing was previously edited" do
     before(:each) do
-      @mirrorer.window = window
-      @mirrorer.buffer = buffer
+      @manipulator.window = window
+      @manipulator.buffer = buffer
 
       @mirror = stub("Mirroer")
       Mirrorer.stub!(:new).and_return(@mirror)
@@ -73,7 +65,7 @@ describe "a mirror manipulator " do
 
     it "should not call the mirrorer" do
       Mirrorer.should_not_receive(:new)
-      @mirrorer.manipulate!(@history)
+      @manipulator.manipulate!(@history)
     end
   end
 end

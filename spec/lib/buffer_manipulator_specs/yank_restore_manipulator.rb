@@ -5,17 +5,7 @@ describe 'A YankRestoreManipulator' do
     @manipulator = YankRestoreManipulator.new
   end
 
-	it 'should assign a window' do 
-  	window = mock("window")
-    @manipulator.window = window
-    @manipulator.window.should == window
-  end
-
-	it 'should assign a buffer' do 
-  	buffer = mock("buffer")
-    @manipulator.buffer = buffer
-    @manipulator.buffer.should == buffer
-  end
+  it_should_behave_like "a buffer manipulator"
 
 	describe 'when restoring an extended tag' do
     before(:each) do

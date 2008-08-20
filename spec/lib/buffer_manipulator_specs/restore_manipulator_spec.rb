@@ -5,29 +5,17 @@ describe 'A RestoreManipulator' do
     @window ||= WindowStub.new(1, 4)
   end
 
-  def buffer 
-    @buffer ||= BufferStub.new("for  in val")
-  end
-
   before(:each) do
     Vim = stub_everything
     @manipulator = RestoreManipulator.new
   end
 
-  it 'should be able to assign a window' do 
-    @manipulator.window = window
-    @manipulator.window.should == window 
-  end
-
-  it 'should be able to assign a buffer' do 
-    @manipulator.buffer = buffer
-    @manipulator.buffer.should == buffer 
-  end
+  it_should_behave_like "a buffer manipulator"
 
   describe 'with a tag, which was not edited by the user' do
     before(:each) do
       @buffer = BufferStub.new("for  in val")
-      @manipulator = RestoreManipulator.new(window, buffer)
+      @manipulator = RestoreManipulator.new(window, @buffer)
       @history = TagHistory.new("${1:key}", 1, 4)
       @manipulator.manipulate!(@history)
     end
@@ -45,7 +33,7 @@ describe 'A RestoreManipulator' do
     before(:each) do
       window.cursor = [1, 12]
       @buffer = BufferStub.new("for something in val")
-      @manipulator = RestoreManipulator.new(window, buffer)
+      @manipulator = RestoreManipulator.new(window, @buffer)
       @history = TagHistory.new("${1:key}", 1, 4)
       @manipulator.manipulate!(@history)
     end

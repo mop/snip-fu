@@ -1,20 +1,11 @@
 require File.dirname(__FILE__) + "/../../spec_helper.rb"
+
 describe 'A YankSaverManipulator' do
   before(:each) do
     @manipulator = YankSaverManipulator.new
   end
 
-	it 'should assign a window' do 
-  	window = mock('window')
-    @manipulator.window = window
-    @manipulator.window.should == window
-  end
-
-	it 'should assign a buffer' do 
-  	buffer = mock('buffer')
-    @manipulator.buffer = buffer
-    @manipulator.buffer.should == buffer
-  end
+  it_should_behave_like "a buffer manipulator"
 
 	describe 'after inserting an extended tag' do
     before(:each) do
