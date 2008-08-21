@@ -1,8 +1,10 @@
-require 'condition_parser'
+require File.dirname(__FILE__) + '/condition_parser'
 require 'rubygems'
 require 'oniguruma'
 # This class is responsible for replacing regular expressions
 # It formats regexps according to the given pattern.
+# ---
+# @package
 class RegexpHandler
   # Initializes the handle with the given expression
   #

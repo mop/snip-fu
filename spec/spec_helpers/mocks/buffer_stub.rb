@@ -1,4 +1,4 @@
-require 'buffer_util'
+require 'buffer_util/buffer_util'
 # this class is a stub for the VIM-buffer
 class BufferStub
   include BufferUtil

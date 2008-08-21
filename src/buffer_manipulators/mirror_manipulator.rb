@@ -22,8 +22,8 @@ class MirrorManipulator
       @history.was_restored = false   # reset the flag
       return @history.last_tag.without_tags
     end
-    StringExtractor.new(
-      buffer, [@history.line_number, @history.start_pos], window.cursor
-    ).extract_string
+    buffer.extract_string(
+      [@history.line_number, @history.start_pos], window.cursor
+    )
   end
 end

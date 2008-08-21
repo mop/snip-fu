@@ -1,5 +1,10 @@
+require File.dirname(__FILE__) + '/string_inserter'
+require File.dirname(__FILE__) + '/string_extractor'
+
 # This module is monkeypatched into the VIM-Buffer-class and it provides many
 # helper-methods for dealing with the buffer.
+# ---
+# @public
 module BufferUtil
 	module ClassMethods
 	end
@@ -53,6 +58,34 @@ module BufferUtil
     #   The lines in the buffer are returned as a string-stream
     def buffer_lines
       buffer_line_cycle.map { |i| self[i] }.join("\n")
+    end
+
+    # Inserts the given string at the given position into the buffer.
+    #
+    # ==== Parameters
+    # str<String>::
+    #   The string which should be inserted into the buffer
+    # pos<Array[Fixnum, Fixnum]>:: 
+    #   The position at which the string should be inserted [line_number,
+    #   column]
+    def insert_string(str, pos)
+      StringInserter.new(self, str, pos).insert_string
+    end
+
+    # Extracts the range from start_pos to end_pos from the buffer and returns
+    # it as a string.
+    #
+    # ==== Parameters
+    # start_pos<Array[Fixnum, Fixnum]>::
+    #   The start position of the string, which should be extracted (line, col)
+    # end_pos<Array[Fixnum, Fixnum]>::
+    #   The end position of the string, which should be extracted (line, col)
+    #
+    # ==== Returns
+    # String::
+    #   The extracted string is returned.
+    def extract_string(start_pos, end_pos)
+      StringExtractor.new(self, start_pos, end_pos).extract_string
     end
 	end
 	

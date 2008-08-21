@@ -1,10 +1,8 @@
 require 'inserter'
 require 'snippet'
-require 'string_extractor'
-require 'string_inserter'
 require 'snippet_loader'
 require 'mirrorer'
-require 'buffer_util'
+require 'buffer_util/buffer_util'
 
 require 'buffer_manipulators/restore_manipulator'
 require 'buffer_manipulators/mirror_manipulator'

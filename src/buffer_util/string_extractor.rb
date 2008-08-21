@@ -1,4 +1,6 @@
 # Extracts a string-stream out of the given buffer.
+# ---
+# @package
 class StringExtractor
   attr_accessor :buffer, :start, :end
   attr_accessor :start_line, :start_pos, :end_line, :end_pos

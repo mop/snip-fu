@@ -1,4 +1,6 @@
 # Inserts a string into the given buffer on the given position
+# ---
+# @package
 class StringInserter
   attr_accessor :buffer, :string, :position, :start_line, :start_pos
   # Initializes the inserter with a buffer, a string to insert and a 

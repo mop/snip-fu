@@ -1,4 +1,3 @@
-require File.dirname(__FILE__) + '/../string_inserter'
 require File.dirname(__FILE__) + '/../matcher'
 require File.dirname(__FILE__) + '/manipulator_helper'
 

@@ -97,9 +97,9 @@ class Inserter
     buffer[start_line] = remove_tag_first_line + end_line_string
     delete_lines!
     create_new_mark!
-    StringInserter.new(@buffer, @mark.without_tags, [
+    @buffer.insert_string(@mark.without_tags, [
       start_line, start_pos
-    ]).insert_string
+    ])
     clear
     @mark
   end

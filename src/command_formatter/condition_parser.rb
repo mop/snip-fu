@@ -1,8 +1,10 @@
-require 'condition-parse-helper'
+require File.dirname(__FILE__) + '/condition-parse-helper'
 
 # This class is responsible for parsing regexp-translation-conditions. 
 # A translation-condition is e.g. $VAR/(some)(.*)/(?1:$2)/, which prints
 # the second group if the first-group (some) matches.
+# ---
+# @package
 class ConditionParser
   # Initializes the ConditionParser-object with the given string (= the
   # condition which should be parsed)

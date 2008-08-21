@@ -48,4 +48,26 @@ describe 'BufferUtil' do
       buffer.buffer_lines.should eql("a\nb\nc")
     end
   end
+
+  describe "insert_string" do
+    it "should use the StringInserter for inserting a string" do
+      buffer = BufferStub.new("buffer")
+      inserter = mock('inserter')
+      StringInserter.should_receive(:new).with(buffer, "teststr", [1, 10]).
+        and_return(inserter)
+      inserter.should_receive(:insert_string)
+      buffer.insert_string('teststr', [1, 10])
+    end
+  end
+
+  describe "extract_string" do
+    it "should use the StringExtractor for extracting a string" do
+      buffer = BufferStub.new("buffer")
+      extractor = mock('extractor')
+      StringExtractor.should_receive(:new).with(buffer, [1, 1], [2, 10]).
+        and_return(extractor)
+      extractor.should_receive(:extract_string)
+      buffer.extract_string([1, 1], [2, 10])
+    end
+  end
 end

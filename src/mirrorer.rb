@@ -1,5 +1,4 @@
-require File.dirname(__FILE__) + '/string_inserter'
-require File.dirname(__FILE__) + '/command_formatter'
+require 'command_formatter/command_formatter'
 
 # Handles the mirroring feature
 class Mirrorer
@@ -37,7 +36,7 @@ class Mirrorer
         pos  = line.index(snippet.start_tag) # The final insertion position
         repl = yield snippet
         buffer[line_number] = line.sub(snippet, "")
-        StringInserter.new(buffer, repl, [line_number, pos]).insert_string
+        buffer.insert_string(repl, [line_number, pos])
       end
     end
   end

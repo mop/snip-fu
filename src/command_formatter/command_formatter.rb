@@ -1,7 +1,9 @@
-require 'regexp_handler'
+require File.dirname(__FILE__) + '/regexp_handler'
 
 # This class replaces the contents of a command according to several patterns
 # and enables to e.g. insert the selected text, ... into the command
+# ---
+# @public
 class CommandFormatter
   # Initializes the formatter with the given string
   #

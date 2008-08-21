@@ -1,4 +1,3 @@
-require File.dirname(__FILE__) + '/../string_inserter'
 require File.dirname(__FILE__) + '/manipulator_helper'
 
 # This class is responsible for restoring the buffer if it wasn't edited by the
@@ -35,9 +34,7 @@ class RestoreManipulator
   end
 
   def do_manipulate
-    StringInserter.new(
-      @buffer, @history.last_tag.without_tags, @window.cursor
-    ).insert_string
+    @buffer.insert_string(@history.last_tag.without_tags, @window.cursor)
     @history.was_restored = true
   end
 end

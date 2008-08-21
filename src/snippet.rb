@@ -1,6 +1,6 @@
 require 'matcher'
 require 'inserter'
-require 'command_formatter'
+require 'command_formatter/command_formatter'
 
 # This class represents a Snippet
 class Snippet
@@ -35,11 +35,10 @@ class Snippet
   def insert_snippet
     remove_key
     insert_string = CommandFormatter.new(@command).format
-    StringInserter.new(
-      @buffer,
+    @buffer.insert_string(
       insert_string.gsub("\n", "\n#{tab_prefix}"),
       [ window.cursor[0], last_word_start ]
-    ).insert_string
+    )
   end
 
   private
