@@ -11,8 +11,17 @@ describe 'a condition parser' do
   end
 
   describe 'with a simple else-clause' do
-    it 'should return the then-part if the if-part is given'
-    it 'should return the else-part if the else-part is given'
+    it 'should return the then-part if the if-part is given' do
+      ConditionParser.new('(?something:true:false)').evaluate.should eql(
+        'true'
+      )
+    end
+
+    it 'should return the else-part if the else-part is given' do
+      ConditionParser.new('(?:true:false)').evaluate.should eql(
+        'false'
+      )
+    end
   end
   
   describe 'with strings before and after the parser' do
