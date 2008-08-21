@@ -75,6 +75,59 @@ describe RegexpHandler do
       ).replace.should eql('bar')
     end
 
-    it 'should handle nested conditionals'
+    it 'should handle nested conditionals' do
+      RegexpHandler.new(
+        'something selected/(something).*(selected)/(?1:(?2:replaced))/g'
+      ).replace.should eql('replaced')
+    end
+  end
+
+  describe 'options' do
+    it 'should forward regexp-options correctly' do
+      regexp = Oniguruma::ORegexp.new('something', 'imxo')
+      Oniguruma::ORegexp.should_receive(:new).with('something', 'imxo').
+        and_return(regexp)
+      RegexpHandler.new(
+        'something selected/something/something/imxo'
+      ).replace 
+    end
+
+    it 'should not screw up with no options given' do
+      regexp = Oniguruma::ORegexp.new('something')
+      Oniguruma::ORegexp.should_receive(:new).with('something', '').
+        and_return(regexp)
+      RegexpHandler.new(
+        'something selected/something/something/'
+      ).replace
+    end
+
+    it 'should not pass "g" to the options-string' do
+      regexp = Oniguruma::ORegexp.new('something')
+      Oniguruma::ORegexp.should_receive(:new).with('something', '').
+        and_return(regexp)
+      RegexpHandler.new(
+        'something selected/something/something/g'
+      ).replace
+    end
+
+    it 'should use gsub when selecting g as option' do
+      regexp = mock('regexp')
+      regexp.should_receive(:gsub).with('something selected', 'something').
+        and_return("")
+      Oniguruma::ORegexp.stub!(:new).and_return(regexp)
+      RegexpHandler.new(
+        'something selected/something/something/g'
+      ).replace
+    end
+
+    it 'should use sub when not selecting g as option' do
+      regexp = mock('regexp')
+      regexp.should_receive(:sub).with('something selected', 'something').
+        and_return("")
+      Oniguruma::ORegexp.stub!(:new).and_return(regexp)
+      RegexpHandler.new(
+        'something selected/something/something/'
+      ).replace
+    end
   end
 end

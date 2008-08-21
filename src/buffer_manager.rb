@@ -104,8 +104,7 @@ class BufferManager
   def handle_insert
     snippet = @snippet_loader.current_snippets.find { |snip| snip.pressed? }
     if snippet
-      snippet.insert_snippet
-      #@last_edited = nil
+      snippet.insert_snippet 
       @history.clear
     end
   end

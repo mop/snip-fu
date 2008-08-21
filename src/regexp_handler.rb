@@ -20,8 +20,8 @@ class RegexpHandler
   # String::
   #   The translated text is returned.
   def replace
-    re = Oniguruma::ORegexp.new(regexp)
-    apply_conditionals(fold_cases(re.sub(text, format)))
+    re = Oniguruma::ORegexp.new(regexp, options)
+    apply_conditionals(fold_cases(re.send(sub_method, text, format)))
   end
 
   private
@@ -214,6 +214,27 @@ class RegexpHandler
     @regexp ||= expr.match(regexp_for_expression)[1]
   end
 
+  # Returns the options-part of the translation-expression
+  #
+  # ==== Returns
+  # String::
+  #   The options of the given translation-expressions are returned 
+  #   (a string including one or more of the following characters: imxog)
+  #   If no options-part is existing, "" is returned.
+  def options
+  	@options ||= (expr.match(regexp_for_expression)[3]).gsub('g', '')
+  end
+
+  # Returns the sub-method, which should be used for the regular expression. 
+  # 
+  # ==== Returns
+  # String::
+  #   'gsub' is returned if the options include a 'g', otherwise 'sub' is
+  #   returned.
+  def sub_method
+  	expr.match(regexp_for_expression)[3].include?('g') ? 'gsub' : 'sub'
+  end
+
   # Returns the format part of the expression
   #
   # ==== Returns
@@ -252,7 +273,7 @@ class RegexpHandler
       /               # The central slash: /some\/text/
       (.*[^\\])       # Just the same as above: /some\/text\/some\/text
       /               # the final slash, we are nearly done!
-      [gxi]*          # some optional options
+      ([imxog]*)      # some optional options
     }x
   end
 end
