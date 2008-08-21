@@ -156,12 +156,20 @@ class CommandFormatter
   def handle_shell(cmd)
     cmd = cmd[1, cmd.size - 2]
     result = ""
+    export_vim
     IO.popen("sh -s", 'w+') do |p|
       p.write cmd
       p.write "\nexit 0\n"      # make shure to end it
       result = p.read
     end
     result.strip
+  end
+
+  # Exports the VIM-variables as environment variables.
+  def export_vim
+    vim_mappings.keys.each do |mapping| 
+      ENV[mapping] = replace_vim_variable(mapping)
+    end
   end
 
   # Returns not nil if the given variable is a shell command
@@ -172,7 +180,7 @@ class CommandFormatter
   # ==== Returns
   # Fixnum:: not nil, if it's an shell command, otherwise nil.
   def shell_command?(variable)
-    variable =~ /^`.*`$/
+    variable =~ /^`.*`$/m
   end
 
   # Returns not nil if the given variable is an extended command

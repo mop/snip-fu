@@ -97,6 +97,17 @@ describe 'a command preprocessor' do
         "something blub"
       )
     end
+
+    it 'should export vim variables as environment variables for the shell' do
+      Vim.stub!(:evaluate).with('snip_tmp').and_return("SELECTED")
+      CommandFormatter.new('something `
+        if [ $VI_SELECTED_TEXT = "SELECTED" ] 
+        then
+          echo "success"
+        fi
+      `').
+        format.should eql('something success')
+    end
 	end
 
   describe 'handling of regexp' do
