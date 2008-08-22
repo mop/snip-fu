@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../spec_helper'
+require File.dirname(__FILE__) + '/../../spec_helper'
 describe 'a condition parser' do
   describe 'with a simple condition' do
     it 'should parse simple then-conditions' do
