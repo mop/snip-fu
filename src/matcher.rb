@@ -17,12 +17,12 @@ module GeditSnippetMatcher
     #   "some ${3:val} string".without_tags  # => nil
     def without_tags
       re = /
-        \$\{    # Match the opening of a tag ${
+        #{SnipFu::Config[:regex_start_tag]}    # Match the opening of a tag ${
         \d+     # Every tag is followed by a serieses of digits -> e.g. ${1
         :?      # Extended tags have a ':' before the text. normal tags haven't
         (.*)    # Extended Tags now have a series of text, which we want to 
                 # extract
-        \}      # The closing tag
+        #{SnipFu::Config[:regex_end_tag]}      # The closing tag
       /xm
       self.match(re)[1]
     end
@@ -39,7 +39,8 @@ module GeditSnippetMatcher
     #   "some ${3:val} string".start_tag     # => nil
     def start_tag
       self.match(/
-        (\$\{         # The regular starting sequence of one of our tags: ${
+        (#{SnipFu::Config[:regex_start_tag]} 
+                      # The regular starting sequence of one of our tags: ${
         \d+           # Every tag must have a number after the opening: ${12
         :?)           # Only extended tags _might_ include a ':': ${12:
       /xm)[0]
@@ -56,7 +57,8 @@ module GeditSnippetMatcher
     #   "some ${3:val} string".digit_tag     # => nil
     def digit_tag
       self.match(/
-        \$\{         # The regular starting sequence of one of our tags: ${
+        #{SnipFu::Config[:regex_start_tag]}         
+                     # The regular starting sequence of one of our tags: ${
         (\d+)        # Every tag must have a number after the opening: ${12
         :?           # Only extended tags _might_ include a ':': ${12:
       /xm)[1]
@@ -77,9 +79,11 @@ module GeditSnippetMatcher
     #   true if the string is a tag, otherwise false.
     def tag?
       !self.match(/^
-        \$\{            # Opening tag                     (${)
+        #{SnipFu::Config[:regex_start_tag]}   
+                        # Opening tag                     (${)
         \d+             # followed by digit               (${12
-        (: | \})          # followed by eigther : or }      (${12: or ${12})
+        (: |            # followed by eigther : or }      (${12: or ${12})
+         #{SnipFu::Config[:regex_end_tag]})        
       /xm).nil?
     end
 

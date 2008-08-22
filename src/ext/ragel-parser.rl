@@ -1,5 +1,7 @@
 #include <glib.h>
 #include <malloc.h>
+#include <string.h>
+#include <stdlib.h>
 #include "ragel-parser.h"
 
 /**
@@ -8,7 +10,8 @@
  */
 static void push(parse_data *parse, int fpc);	
 /**
- * This function is called when a regular opening tag (e.g. { ) is encountered.
+ * This function is called when a regular opening tag (e.g. { ) is 
+ * encountered.
  */
 static void push_regular(parse_data *parse, int fpc);
 /**
@@ -16,12 +19,21 @@ static void push_regular(parse_data *parse, int fpc);
  */
 static void pop(parse_data *parse, int fpc);
 
+/**
+ * This returns TRUE if the parse-stream contains a correct start-tag
+ */
+static int is_correct_start_tag(parse_data *parse, int fpc);
+/**
+ * This returns TRUE if the parse-stream contains a correct end-tag
+ */
+static int is_correct_end_tag(parse_data *parse, int fpc);
+
 %%{
 machine snippet_parser;
 
-open_tag  = "${";
-open_regular_tag = "{";
-close_tag = "}";
+open_tag  = ('$' [\{\[<%]);
+open_regular_tag = [\{\[<%];
+close_tag = [\}\]>%];
 
 main := |*
       open_tag  @{ push(parse, fpc - data); };
@@ -36,6 +48,7 @@ main := |*
 
 void push(parse_data *parse, int fpc)
 {
+	if (!is_correct_start_tag(parse, fpc)) return;
 	parse->depth += 1;
 	if (parse->depth == 1) {
 		int *array = malloc(sizeof(int) * ARRAY_SIZE);
@@ -46,12 +59,14 @@ void push(parse_data *parse, int fpc)
 
 void push_regular(parse_data *parse, int fpc)
 {
+	if (!is_correct_start_tag(parse, fpc)) return;
 	if (parse->depth >= 1)
 		parse->depth += 1;
 }
 
 void pop(parse_data *parse, int fpc) 
 {
+	if (!is_correct_end_tag(parse, fpc)) return;
 	if (parse->depth == 1) {
 		GList *elem = g_list_last(parse->elements);
 		int *array = (int *)elem->data;
@@ -61,14 +76,34 @@ void pop(parse_data *parse, int fpc)
 		parse->depth -= 1;
 }
 
-parse_data* parser_execute(const char *data, int len)
+int is_correct_start_tag(parse_data *parse, int fpc)
+{
+	return strncmp(
+		&parse->input->data[fpc],
+		&parse->input->start[1],
+		parse->input->start_length - 1
+	) == 0;
+}
+
+int is_correct_end_tag(parse_data *parse, int fpc)
+{
+	return strncmp(
+		&parse->input->data[fpc],
+		parse->input->end,
+		parse->input->end_length
+	) == 0;
+}
+
+parse_data* parser_execute(parse_input *input)
 {
 	parse_data *parse = malloc(sizeof(*parse));
-	const char *p = data;
-	const char *pe = data + len;
+	const char *p     = input->data;
+	const char *pe    = input->data + input->data_length;
+	const char *data  = input->data;
 
 	parse->depth    = 0;
 	parse->elements = NULL;
+	parse->input = input;
 
 	int cs, act = 0;
 	const char *tokstart, *tokend, *reg;

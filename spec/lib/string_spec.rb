@@ -204,3 +204,37 @@ describe String, 'bugfixes' do
     ])
   end
 end
+
+describe 'String with different tags' do
+  before(:each) do
+    SnipFu::Config[:start_tag] = '$['
+    SnipFu::Config[:end_tag]   = ']'
+  end
+
+  it 'should remove tags correctly' do
+    '$[1:val]'.without_tags.should == 'val'
+  end
+
+  it 'should return the start tag correctly' do
+    '$[1:val]'.start_tag.should == '$[1:'
+  end
+
+  it 'should extract the digit from the tag correctly' do
+    '$[1:val]'.digit_tag.should == '1'
+  end
+
+  it 'should identify a tag correctly' do
+    '$[1:val]'.should be_tag
+  end
+
+  it 'should identify a single tag correctly' do
+    '$[0]'.should be_tag
+  end
+
+  it 'should scan a text with snippets correctly' do
+    'text ${1:no} $[1:val] other text $[0]'.scan_filtered_snippets.should == [
+      '$[1:val]',
+      '$[0]'
+    ]
+  end
+end

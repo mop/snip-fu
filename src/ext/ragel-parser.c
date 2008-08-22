@@ -1,6 +1,8 @@
 #line 1 "./ragel-parser.rl"
 #include <glib.h>
 #include <malloc.h>
+#include <string.h>
+#include <stdlib.h>
 #include "ragel-parser.h"
 
 /**
@@ -9,7 +11,8 @@
  */
 static void push(parse_data *parse, int fpc);	
 /**
- * This function is called when a regular opening tag (e.g. { ) is encountered.
+ * This function is called when a regular opening tag (e.g. { ) is 
+ * encountered.
  */
 static void push_regular(parse_data *parse, int fpc);
 /**
@@ -17,27 +20,37 @@ static void push_regular(parse_data *parse, int fpc);
  */
 static void pop(parse_data *parse, int fpc);
 
-#line 33 "./ragel-parser.rl"
+/**
+ * This returns TRUE if the parse-stream contains a correct start-tag
+ */
+static int is_correct_start_tag(parse_data *parse, int fpc);
+/**
+ * This returns TRUE if the parse-stream contains a correct end-tag
+ */
+static int is_correct_end_tag(parse_data *parse, int fpc);
+
+#line 45 "./ragel-parser.rl"
 
 
 
-#line 25 "./ragel-parser.c"
+#line 37 "./ragel-parser.c"
 static const char _snippet_parser_actions[] = {
 	0, 1, 3, 1, 4, 1, 8, 1, 
 	9, 2, 0, 5, 2, 1, 6, 2, 
-	2, 7
+	2, 7, 3, 1, 6, 2
 };
 
 static const char _snippet_parser_key_offsets[] = {
-	0, 3
+	0, 8
 };
 
 static const char _snippet_parser_trans_keys[] = {
-	36, 123, 125, 123, 0
+	36, 37, 60, 62, 91, 93, 123, 125, 
+	37, 60, 91, 123, 0
 };
 
 static const char _snippet_parser_single_lengths[] = {
-	3, 1
+	8, 4
 };
 
 static const char _snippet_parser_range_lengths[] = {
@@ -45,15 +58,17 @@ static const char _snippet_parser_range_lengths[] = {
 };
 
 static const char _snippet_parser_index_offsets[] = {
-	0, 4
+	0, 9
 };
 
 static const char _snippet_parser_trans_targs_wi[] = {
-	1, 0, 0, 0, 0, 0, 0
+	1, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0
 };
 
 static const char _snippet_parser_trans_actions_wi[] = {
-	0, 12, 15, 5, 9, 7, 0
+	0, 18, 12, 15, 12, 15, 12, 15, 
+	5, 9, 9, 9, 9, 7, 0
 };
 
 static const char _snippet_parser_to_state_actions[] = {
@@ -70,10 +85,11 @@ static const int snippet_parser_error = -1;
 
 static const int snippet_parser_en_main = 0;
 
-#line 36 "./ragel-parser.rl"
+#line 48 "./ragel-parser.rl"
 
 void push(parse_data *parse, int fpc)
 {
+	if (!is_correct_start_tag(parse, fpc)) return;
 	parse->depth += 1;
 	if (parse->depth == 1) {
 		int *array = malloc(sizeof(int) * ARRAY_SIZE);
@@ -84,12 +100,14 @@ void push(parse_data *parse, int fpc)
 
 void push_regular(parse_data *parse, int fpc)
 {
+	if (!is_correct_start_tag(parse, fpc)) return;
 	if (parse->depth >= 1)
 		parse->depth += 1;
 }
 
 void pop(parse_data *parse, int fpc) 
 {
+	if (!is_correct_end_tag(parse, fpc)) return;
 	if (parse->depth == 1) {
 		GList *elem = g_list_last(parse->elements);
 		int *array = (int *)elem->data;
@@ -99,28 +117,48 @@ void pop(parse_data *parse, int fpc)
 		parse->depth -= 1;
 }
 
-parse_data* parser_execute(const char *data, int len)
+int is_correct_start_tag(parse_data *parse, int fpc)
+{
+	return strncmp(
+		&parse->input->data[fpc],
+		&parse->input->start[1],
+		parse->input->start_length - 1
+	) == 0;
+}
+
+int is_correct_end_tag(parse_data *parse, int fpc)
+{
+	return strncmp(
+		&parse->input->data[fpc],
+		parse->input->end,
+		parse->input->end_length
+	) == 0;
+}
+
+parse_data* parser_execute(parse_input *input)
 {
 	parse_data *parse = malloc(sizeof(*parse));
-	const char *p = data;
-	const char *pe = data + len;
+	const char *p     = input->data;
+	const char *pe    = input->data + input->data_length;
+	const char *data  = input->data;
 
 	parse->depth    = 0;
 	parse->elements = NULL;
+	parse->input = input;
 
 	int cs, act = 0;
 	const char *tokstart, *tokend, *reg;
 	
-#line 115 "./ragel-parser.c"
+#line 153 "./ragel-parser.c"
 	{
 	cs = snippet_parser_start;
 	tokstart = 0;
 	tokend = 0;
 	act = 0;
 	}
-#line 76 "./ragel-parser.rl"
+#line 111 "./ragel-parser.rl"
 	
-#line 124 "./ragel-parser.c"
+#line 162 "./ragel-parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -139,7 +177,7 @@ _resume:
 #line 1 "./ragel-parser.rl"
 	{tokstart = p;}
 	break;
-#line 143 "./ragel-parser.c"
+#line 181 "./ragel-parser.c"
 		}
 	}
 
@@ -204,38 +242,38 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 27 "./ragel-parser.rl"
+#line 39 "./ragel-parser.rl"
 	{ push(parse, p - data); }
 	break;
 	case 1:
-#line 28 "./ragel-parser.rl"
+#line 40 "./ragel-parser.rl"
 	{ push_regular(parse, p - data); }
 	break;
 	case 2:
-#line 29 "./ragel-parser.rl"
+#line 41 "./ragel-parser.rl"
 	{ pop(parse, p - data); }
 	break;
 	case 5:
-#line 27 "./ragel-parser.rl"
+#line 39 "./ragel-parser.rl"
 	{tokend = p+1;}
 	break;
 	case 6:
-#line 28 "./ragel-parser.rl"
+#line 40 "./ragel-parser.rl"
 	{tokend = p+1;}
 	break;
 	case 7:
-#line 29 "./ragel-parser.rl"
+#line 41 "./ragel-parser.rl"
 	{tokend = p+1;}
 	break;
 	case 8:
-#line 30 "./ragel-parser.rl"
+#line 42 "./ragel-parser.rl"
 	{tokend = p+1;}
 	break;
 	case 9:
-#line 30 "./ragel-parser.rl"
+#line 42 "./ragel-parser.rl"
 	{tokend = p;p--;}
 	break;
-#line 239 "./ragel-parser.c"
+#line 277 "./ragel-parser.c"
 		}
 	}
 
@@ -248,7 +286,7 @@ _again:
 #line 1 "./ragel-parser.rl"
 	{tokstart = 0;}
 	break;
-#line 252 "./ragel-parser.c"
+#line 290 "./ragel-parser.c"
 		}
 	}
 
@@ -256,7 +294,7 @@ _again:
 		goto _resume;
 	_out: {}
 	}
-#line 77 "./ragel-parser.rl"
+#line 112 "./ragel-parser.rl"
 	return parse;
 }
 
