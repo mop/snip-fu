@@ -43,8 +43,12 @@ class JumperManipulator
   #   The first tag in the given array is returned.
   def first_match(matches)
     matches.sort_by do |a| 
-      a.start_tag.index("${0") ? "${9999999999:" : a
+      a.start_tag.index("#{start_symbol}0") ? "#{start_symbol}9999999999:" : a
     end.first
+  end
+
+  def start_symbol
+    SnipFu::Config[:start_tag]
   end
 
   # Clears the history and returns the history-object

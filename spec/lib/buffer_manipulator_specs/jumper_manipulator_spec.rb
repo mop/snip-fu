@@ -102,3 +102,31 @@ describe 'A JumperManipulator' do
     end
   end
 end
+
+describe 'A JumperManipulator with other tags' do
+  include VimSpecHelper
+  before(:each) do
+    SnipFu::Config[:start_tag] = '$['
+    SnipFu::Config[:end_tag]   = ']'
+  end
+
+  after(:each) do
+    SnipFu::Config[:start_tag] = '${'
+    SnipFu::Config[:end_tag]   = '}'
+  end
+
+  describe 'jumping with a 0-mark' do
+    before(:each) do
+      @buffer = BufferStub.new("for $[0] in $[2:val]")
+      @window = WindowStub.new(1, 1)
+      @history = TagHistory.new
+      @manipulator = JumperManipulator.new(@window, @buffer)
+      @manipulator.manipulate!(@history)
+    end
+
+    it 'it should eliminate val' do
+      @buffer[1].should == 'for $[0] in val'
+    end
+  end
+
+end

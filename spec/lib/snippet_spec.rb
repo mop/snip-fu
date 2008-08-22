@@ -142,3 +142,30 @@ describe Snippet, 'insert tabs' do
     end
   end
 end
+
+describe Snippet, 'with other tags' do
+  include SnippetSpecHelper
+  include VimSpecHelper
+
+  before(:each) do
+    stub_vim
+    SnipFu::Config[:start_tag] = '$['
+    SnipFu::Config[:end_tag]   = ']'
+
+    @buffer = BufferStub.new("for")
+    @snippet = fetch_snippet(:for, @buffer)
+  end
+
+  after(:each) do
+    SnipFu::Config[:start_tag] = '${'
+    SnipFu::Config[:end_tag]   = '}'
+  end
+
+  it 'should insert the snippet with replaced tags' do
+    @snippet.insert_snippet
+    @buffer.contents[0].should == 'for $[0:key] in $[1:vals]'
+    @buffer.contents[1].should == '$[2]'
+    @buffer.contents[2].should == 'end'
+    @buffer.contents[3].should == '$[3]'
+  end
+end

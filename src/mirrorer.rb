@@ -43,14 +43,19 @@ class Mirrorer
 
   def regex_tag?(tag)
     tag =~ /^
-      \$\{\d+         # match the opening sequence. e.g.: ${3
+      #{SnipFu::Config[:regex_start_tag]}\d+         
+                      # match the opening sequence. e.g.: ${3
       \/              # a regexp tag is followed by a slash
-      .*\}            # until the end there is the transformation pattern
+      .*#{SnipFu::Config[:regex_end_tag]}            
+                      # until the end there is the transformation pattern
     $/x 
   end
 
   def transform_regex(snippet)
-    to_transform = snippet.sub(/^\$\{(\d+)/, "${#{to_insert}")
+    to_transform = snippet.sub(
+      /^#{SnipFu::Config[:regex_start_tag]}(\d+)/, 
+       "#{SnipFu::Config[:start_tag]}#{to_insert}"
+    )
     CommandFormatter.new(to_transform).format
   end
 

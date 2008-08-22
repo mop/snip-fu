@@ -215,12 +215,18 @@ class CommandFormatter
   # Regexp:: The regular expression which should be used.
   def extended_regex
     /^
-      \$?          # Every extended-tag starts with $
-      (\{          # followed by { -> ${
-      [^\d]        # it _must_not_ be followed by a single digit
-      .+(:|\/).*?  # it must have a colon or a slash in it ${VAR1:default 
-      \})          # it is closed by } -> ${VAR:default}
+      \$?                  # Every extended-tag starts with $
+      (#{first_start_tag}  # followed by { -> ${
+      [^\d]                # it _must_not_ be followed by a single digit
+      .+(:|\/).*?          # it must have a colon or a slash in it 
+                           # ${VAR1:default 
+                           # it is closed by } -> ${VAR:default}
+      #{SnipFu::Config[:regex_end_tag]}) 
     $/xm
+  end
+
+  def first_start_tag
+    SnipFu::Config[:regex_start_tag][2, 2]
   end
 
   # Returns the regular expression which should be used for searching 

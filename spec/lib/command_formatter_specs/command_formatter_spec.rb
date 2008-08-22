@@ -171,3 +171,28 @@ describe 'a command preprocessor' do
     end
   end
 end
+
+describe "A command formatter with non-default tags" do
+  include VimSpecHelper
+  before(:each) do
+    stub_vim
+    SnipFu::Config[:start_tag] = '$['
+    SnipFu::Config[:end_tag]   = ']'
+  end
+
+  after(:each) do
+    SnipFu::Config[:start_tag] = '${'
+    SnipFu::Config[:end_tag]   = '}'
+  end
+
+  it 'should replace variables correctly' do
+    CommandFormatter.new("$[HOME:default]").format.should eql(
+      ENV["HOME"]
+    )
+  end
+
+  it 'should translate regexps correctly' do
+    CommandFormatter.new("$[something selected/^.+$/- \\U${0}/g]").
+      format.should eql("- SOMETHING SELECTED")
+  end
+end

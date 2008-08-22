@@ -13,7 +13,7 @@ class Snippet
   )
 
     @key     = key
-    @command = command
+    @command = convert_tags(command)
     @window  = window
     @buffer  = buffer
   end
@@ -137,6 +137,59 @@ class Snippet
       tabstr = "\t"
     end
     tabstr * tabs rescue ''
+  end
+
+  # Converts the given ${1} tags to the configured tags
+  #
+  # ==== Parameters
+  # str<String>:: The command-string which should be replaced.
+  #
+  # ==== Returns
+  # String:: The replaced string will be returned.
+  def convert_tags(str)
+    reduce_tags(str) do |str, pos|
+      start, stop = pos
+      str[start, 2] = @start_tag
+      str[stop]     = @end_tag
+      str
+    end
+  end
+
+  # Reduces the tags of the given string by yielding a block with the string, 
+  # and a snippet-position within it. The string will be replaced by the result
+  # of the yield-block. If no snippet with the original tags are found, the
+  # method exits.
+  #
+  # ==== Parameters
+  # str<String>:: The string which should be replaced
+  #
+  # ==== Returns
+  # String::
+  #   The replaced result
+  def reduce_tags(str)
+    return str if SnipFu::Config[:start_tag] == '${'
+    backup_tags
+    while (snippets = str.scan_snippets_positions).size > 0
+      str = snippets.reduce(str) { |str, snippet|  yield str, snippet }
+    end
+    restore_tags
+    str
+  end
+
+  # backups the original configuration-tags into @start_tag and @end_tag and
+  # then replaces them by ${1}-tags.
+  def backup_tags
+    @start_tag = SnipFu::Config[:start_tag]
+    @end_tag   = SnipFu::Config[:end_tag]
+
+    SnipFu::Config[:start_tag] = '${'
+    SnipFu::Config[:end_tag]   = '}'
+  end
+
+  # Restores the original tags in the configuration
+  def restore_tags
+    SnipFu::Config[:start_tag] = @start_tag 
+    SnipFu::Config[:end_tag]   = @end_tag
   end
 end
 

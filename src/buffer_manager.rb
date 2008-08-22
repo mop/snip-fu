@@ -11,6 +11,7 @@ require 'buffer_manipulators/jumper_manipulator'
 require 'buffer_manipulators/yank_restore_manipulator'
 
 require 'buffer_manipulators/tag_history'
+require 'config'
 
 String.send(:include, GeditSnippetMatcher)
 

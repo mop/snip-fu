@@ -132,7 +132,8 @@ class Inserter
   #   via this method.
   def create_new_mark!
     tag = @mark.start_tag
-    @mark = tag + CommandFormatter.new(@mark.without_tags).format + "}"
+    @mark = tag + CommandFormatter.new(@mark.without_tags).format + 
+      SnipFu::Config[:end_tag]
   end
 
   # Returns the remaining string at end_line if there is a string left after
