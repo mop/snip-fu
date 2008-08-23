@@ -7,6 +7,12 @@ describe 'a command preprocessor' do
   end
   
 	describe 'variable replacement' do
+    it 'should recognize variables correctly' do
+      CommandFormatter.new("$23NOVAR").format.should eql("$23NOVAR")
+      CommandFormatter.new("$VAR").format.should eql("")
+      CommandFormatter.new("$_VAR").format.should eql("")
+    end
+
 		it 'should replace VI_SELECTED_TEXT' do
       Vim.should_receive(:command).with("let snip_tmp = getreg()")
       Vim.should_receive(:evaluate).with('snip_tmp').and_return("SELECTED")

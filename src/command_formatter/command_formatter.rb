@@ -236,9 +236,10 @@ class CommandFormatter
   # Regexp:: The regular expression which should be used.
   def variable_regex
     /
-      \$            # start tag
-      ([\w_]+)      # our variables are starting with $ and are followed by 
-                    # upcase letters or _. We want to match the variable name
+      \$                # start tag
+      ([a-zA-Z_][\w_]*) # our variables are starting with $ and are followed by
+                        # upcase letters or _. We want to match the 
+                        # variable name
     /xm
   end
 

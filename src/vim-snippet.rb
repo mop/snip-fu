@@ -1,5 +1,6 @@
 $:.unshift(File.dirname(__FILE__))
 require 'buffer_manager'
+require 'config'
 
 def buffer_manager
   @buffer_manager ||= BufferManager.new
@@ -42,3 +43,4 @@ VIM::command("
 smap <unique> <Tab> i<BS><Tab>
 ")
 
+SnipFu::Config.load
