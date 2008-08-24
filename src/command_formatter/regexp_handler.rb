@@ -23,7 +23,7 @@ class RegexpHandler
   #   The translated text is returned.
   def replace
     re = Oniguruma::ORegexp.new(regexp, options)
-    apply_conditionals(fold_cases(re.send(sub_method, text, format)))
+    fold_cases(re.send(sub_method, text, apply_conditionals(format)))
   end
 
   private
@@ -189,7 +189,17 @@ class RegexpHandler
   end
 
   def apply_conditionals(result)
-    ConditionParser.new(result).evaluate
+    re = Oniguruma::ORegexp.new(regexp, options)
+    cond = replace_conditionals(result, re.send(match_method, text))
+    ConditionParser.new(cond).evaluate
+  end
+
+  def replace_conditionals(result, match)
+    match = match[0] if match.kind_of? Array
+    result.gsub(/[^\\]?\?\d/) do |m|
+      str = match[m[-1].chr.to_i] ? "MATCH" : ''
+      "#{m[0, 2]}#{str}"
+    end
   end
 
   # Returns the text part of the expression
@@ -237,6 +247,16 @@ class RegexpHandler
   	expr.match(regexp_for_expression)[3].include?('g') ? 'gsub' : 'sub'
   end
 
+  # Returns the match-method, which should be used for the regular expression. 
+  # 
+  # ==== Returns
+  # String::
+  #   'scan' is returned if the options include a 'g', otherwise 'match' is
+  #   returned.
+  def match_method
+  	expr.match(regexp_for_expression)[3].include?('g') ? 'scan' : 'match'
+  end
+
   # Returns the format part of the expression
   #
   # ==== Returns
@@ -257,9 +277,9 @@ class RegexpHandler
       tmp = match[1, match.size]
       tmp = tmp[1].chr if tmp.size > 1
       "\\#{tmp}"
-    end.gsub(/[^\\]?\?\d/) do |match|
-      match[match.size - 1] = "#{match[0, 2]}\\#{match[match.size - 1].chr}"
-    end
+    end#.gsub(/[^\\]?\?\d/) do |match|
+      #match[match.size - 1] = "#{match[0, 2]}\\#{match[match.size - 1].chr}"
+    #end
   end
 
   # Returns the regular expression used for matching.
@@ -276,6 +296,6 @@ class RegexpHandler
       (.*[^\\])       # Just the same as above: /some\/text\/some\/text
       /               # the final slash, we are nearly done!
       ([imxog]*)      # some optional options
-    }x
+    }xm
   end
 end

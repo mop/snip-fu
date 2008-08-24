@@ -178,6 +178,41 @@ describe 'a command preprocessor' do
   end
 end
 
+describe "A CommandFormatter with a lot of text in the buffer" do
+  include VimSpecHelper
+  before(:each) do
+    stub_vim
+    Vim.stub!(:evaluate).and_return("{arg(some)thing}:")
+  end
+
+  it "should not blow up when tranlating with regexps" do
+    CommandFormatter.new(
+      "${VI_SELECTED_TEXT/^(.*)$/(?1:match:false)/mg}"
+    ).format.should eql("match")
+  end
+
+  it 'should translate an initialize string correctly' do
+    Vim.stub!(:evaluate).and_return("def initialize(args)\n")
+    CommandFormatter.new(
+      "${VI_SELECTED_TEXT/^(.*)$/(?1:true:false)/mg}"
+    ).format.should eql("true")
+  end
+
+  it 'should translate the begin-command correctly' do 
+    Vim.stub!(:evaluate).and_return("def initialize(args)\n")
+    CommandFormatter.new(
+      "${VI_SELECTED_TEXT/(\A.*)|(.+)|\n\z/(?1:$0:(?2:\t$0))/g}"
+    ).format.should eql("\tdef initialize(args)\n")
+  end
+
+  it 'should translate one-symbol texts' do
+    Vim.stub!(:evaluate).and_return("n")
+    CommandFormatter.new(
+      "${VI_SELECTED_TEXT/(.*)/(?1:$0:(?2:\t$0))/}"
+    ).format.should eql("n")
+  end
+end
+
 describe "A command formatter with non-default tags" do
   include VimSpecHelper
   before(:each) do

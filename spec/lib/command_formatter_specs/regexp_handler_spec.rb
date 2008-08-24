@@ -86,7 +86,7 @@ describe RegexpHandler do
     it 'should forward regexp-options correctly' do
       regexp = Oniguruma::ORegexp.new('something', 'imxo')
       Oniguruma::ORegexp.should_receive(:new).with('something', 'imxo').
-        and_return(regexp)
+        any_number_of_times.and_return(regexp)
       RegexpHandler.new(
         'something selected/something/something/imxo'
       ).replace 
@@ -95,7 +95,7 @@ describe RegexpHandler do
     it 'should not screw up with no options given' do
       regexp = Oniguruma::ORegexp.new('something')
       Oniguruma::ORegexp.should_receive(:new).with('something', '').
-        and_return(regexp)
+        any_number_of_times.and_return(regexp)
       RegexpHandler.new(
         'something selected/something/something/'
       ).replace
@@ -104,16 +104,17 @@ describe RegexpHandler do
     it 'should not pass "g" to the options-string' do
       regexp = Oniguruma::ORegexp.new('something')
       Oniguruma::ORegexp.should_receive(:new).with('something', '').
-        and_return(regexp)
+        any_number_of_times.and_return(regexp)
       RegexpHandler.new(
         'something selected/something/something/g'
       ).replace
     end
 
-    it 'should use gsub when selecting g as option' do
+    it 'should use gsub and scan when selecting g as option' do
       regexp = mock('regexp')
       regexp.should_receive(:gsub).with('something selected', 'something').
         and_return("")
+      regexp.should_receive(:scan).and_return([])
       Oniguruma::ORegexp.stub!(:new).and_return(regexp)
       RegexpHandler.new(
         'something selected/something/something/g'
@@ -124,6 +125,7 @@ describe RegexpHandler do
       regexp = mock('regexp')
       regexp.should_receive(:sub).with('something selected', 'something').
         and_return("")
+      regexp.should_receive(:match).and_return([])
       Oniguruma::ORegexp.stub!(:new).and_return(regexp)
       RegexpHandler.new(
         'something selected/something/something/'
