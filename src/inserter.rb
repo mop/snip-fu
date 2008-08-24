@@ -197,7 +197,7 @@ class Inserter
   end
 
   def find_final_end_line
-    find_line { @mark.length - @mark.start_tag.size - 1 + start_pos }
+    find_line { @mark.length - @mark.start_tag.size - 2 + start_pos }
   end
 
   def find_final_end_pos
@@ -268,8 +268,20 @@ class Inserter
   #   The number of times the cursor must be moved left or right.
   def calculate_horizontal(vertical)
     return buffer[end_line].length - end_pos + 1 if line_too_small?
+    return start_pos - (end_pos - 1) if end_line_too_short?
     return start_pos - end_pos if @tags_removed
     (start_pos)  - (end_pos - subtract(vertical))
+  end
+
+  # Checks whether the end-line is too short for the actual horizontal movement
+  # value. If this is the case, the horizontal direction should be decremented.
+  #
+  # === Returns
+  # Bool::
+  #   true if the end-line is shorter than the horizontal distance
+  def end_line_too_short?
+    line = buffer[end_line]
+    line[start_pos, line.size].length <= (start_pos - end_pos).abs
   end
 
   # Returns true if the end-line of the buffer is smaller then the

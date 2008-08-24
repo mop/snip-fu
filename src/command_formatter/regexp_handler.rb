@@ -23,7 +23,9 @@ class RegexpHandler
   #   The translated text is returned.
   def replace
     re = Oniguruma::ORegexp.new(regexp, options)
-    fold_cases(re.send(sub_method, text, apply_conditionals(format)))
+    re.send(sub_method, text) do |match|
+      fold_cases(replace_tags(apply_conditionals(match), match))
+    end
   end
 
   private
@@ -188,17 +190,51 @@ class RegexpHandler
     str
   end
 
-  def apply_conditionals(result)
+  # Replaces the \0, \1, ... tags with the matched value
+  #
+  # ==== Parameters
+  # string<String>:: 
+  #   The string which contains the \0, \1, ... tags
+  # tags<MatchData>::
+  #   The tags, which contain the corresponding tags
+  def replace_tags(string, tags)
+    string.gsub(/\\(\d+)/) do |match|
+      pos = match[1, match.size].to_i
+      tags[pos]
+    end
+  end
+
+  # Applies the conditionals to the given matched tags
+  #
+  # ==== Parameters
+  # match<MatchData>::
+  #   The match-data, which contains the matched subgroups in the regexp
+  #
+  # ==== Returns
+  # String::
+  #   The evaluated condition expression will be returned. This expression must
+  #   still be fold-translated and tag-replaced.
+  def apply_conditionals(match)
+    cond = replace_conditionals(match)
     re = Oniguruma::ORegexp.new(regexp, options)
-    cond = replace_conditionals(result, re.send(match_method, text))
     ConditionParser.new(cond).evaluate
   end
 
-  def replace_conditionals(result, match)
+  # Replaces the format with the given match-data
+  #
+  # ==== Parameters
+  # match<MatchData>::
+  #   The match-data, which contains the matched subgroups in the regexp
+  #
+  # ==== Returns
+  # String::
+  #   The evaluated condition expression will be returned. This expression must
+  #   still be fold-translated and tag-replaced.
+  def replace_conditionals(match)
     match = match[0] if match.kind_of? Array
-    result.gsub(/[^\\]?\?\d/) do |m|
-      str = match[m[-1].chr.to_i] ? "MATCH" : ''
-      "#{m[0, 2]}#{str}"
+    format.gsub(/[^\\]?\?\d/) do |m| # search for ?1, ?2, ?... expressions
+      str = match[m[-1].chr.to_i] ? "MATCH" : '' # m[-1] = 1, or 2, ...
+      "#{m[0, 2]}#{str}"    # return (?MATCH or (?
     end
   end
 
@@ -277,9 +313,7 @@ class RegexpHandler
       tmp = match[1, match.size]
       tmp = tmp[1].chr if tmp.size > 1
       "\\#{tmp}"
-    end#.gsub(/[^\\]?\?\d/) do |match|
-      #match[match.size - 1] = "#{match[0, 2]}\\#{match[match.size - 1].chr}"
-    #end
+    end
   end
 
   # Returns the regular expression used for matching.

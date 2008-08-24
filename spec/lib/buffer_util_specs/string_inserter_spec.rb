@@ -91,10 +91,22 @@ describe StringInserter do
       StringInserter.new(@buffer, "multiple\nlines\nend", [1, 1]).insert_string
     end
 
-    it "shoudl restore the filetype" do
+    it "should restore the filetype" do
       Vim.stub!(:evaluate).with("&filetype").and_return(:filetype)
       Vim.should_receive(:command).with("set filetype=filetype")
       StringInserter.new(@buffer, "multiple\nlines\nend", [1, 1]).insert_string
+    end
+  end
+
+  describe "insertion of trailing newlines" do
+    before(:each) do
+      @buffer = BufferStub.new("val something")
+    end
+
+    it "should insert trailing newlines correctly" do
+      StringInserter.new(@buffer, "newstr\n", [1, 0]).insert_string
+      @buffer[1].should == "newstr"
+      @buffer[2].should == "val something"
     end
   end
 end

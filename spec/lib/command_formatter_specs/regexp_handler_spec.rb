@@ -80,6 +80,12 @@ describe RegexpHandler do
         'something selected/(something).*(selected)/(?1:(?2:replaced))/g'
       ).replace.should eql('replaced')
     end
+
+    it 'should apply conditions multiple times' do
+      RegexpHandler.new(
+        'aeiou/(a)|(e)|./(?1:match1:(?2:match2))/g'
+      ).replace.should eql('match1match2')
+    end
   end
 
   describe 'options' do
@@ -112,9 +118,8 @@ describe RegexpHandler do
 
     it 'should use gsub and scan when selecting g as option' do
       regexp = mock('regexp')
-      regexp.should_receive(:gsub).with('something selected', 'something').
+      regexp.should_receive(:gsub).with('something selected').
         and_return("")
-      regexp.should_receive(:scan).and_return([])
       Oniguruma::ORegexp.stub!(:new).and_return(regexp)
       RegexpHandler.new(
         'something selected/something/something/g'
@@ -123,9 +128,8 @@ describe RegexpHandler do
 
     it 'should use sub when not selecting g as option' do
       regexp = mock('regexp')
-      regexp.should_receive(:sub).with('something selected', 'something').
+      regexp.should_receive(:sub).with('something selected').
         and_return("")
-      regexp.should_receive(:match).and_return([])
       Oniguruma::ORegexp.stub!(:new).and_return(regexp)
       RegexpHandler.new(
         'something selected/something/something/'

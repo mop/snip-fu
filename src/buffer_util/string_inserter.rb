@@ -62,7 +62,9 @@ endif")
   # Array<String>::
   #   An array of lines is returned
   def lines 
-    string.split("\n")
+    tmp = string.split("\n")
+    tmp += [""] if string[-1].chr == "\n"     # don't forget the trailing \n
+    tmp
   end
 
   # Returns true if the string, which should be inserted is a multiline-string

@@ -252,12 +252,12 @@ end
 
 describe 'An inserter handling the rspec-it-tag' do
   before(:each) do
-      @buffer   = BufferStub.new(
-        "it \"should description\" ${3:do\n  ${0}\nend}"
-      )
-      @mark     = "${3:do\n  ${0}\nend}"
-      @inserter = Inserter.new(1, @mark, @buffer)
-      @inserter.remove_tags_from_buffer!
+    @buffer   = BufferStub.new(
+      "it \"should description\" ${3:do\n  ${0}\nend}"
+    )
+    @mark     = "${3:do\n  ${0}\nend}"
+    @inserter = Inserter.new(1, @mark, @buffer)
+    @inserter.remove_tags_from_buffer!
   end
 
   it 'should modify the buffer correctly' do
@@ -269,5 +269,54 @@ describe 'An inserter handling the rspec-it-tag' do
 
   it 'should return the correct key_directions' do
     @inserter.key_directions.should == "\\<Down>\\<Down>\\<Left>"
+  end
+end
+
+describe "an Inserter handling a multiline string in the yank-buffer" do
+  include VimSpecHelper
+  before(:each) do
+    stub_vim
+    Vim.stub!(:evaluate).and_return("multiline\nyank\n")
+    @buffer   = BufferStub.new(
+      "begin\n${3:${VI_SELECTED_TEXT/(\A.*)|(.+)|\n\z/(?1:$0:(?2:\t$0))/g}}\nrescue\n  ${0}\nend"
+    )
+    @mark     = "${3:${VI_SELECTED_TEXT/(\A.*)|(.+)|\n\z/(?1:$0:(?2:\t$0))/g}}"
+    @inserter = Inserter.new(2, @mark, @buffer)
+    @inserter.remove_tags_from_buffer!
+  end
+
+  it "should insert the string correctly" do
+    @buffer[1].should == "begin"
+    @buffer[2].should == "\tmultiline"
+    @buffer[3].should == "\tyank"
+    @buffer[4].should == ""
+    @buffer[5].should == "rescue"
+    @buffer[6].should == "  ${0}"
+    @buffer[7].should == "end"
+  end
+
+  it "should return the correct key_directions" do
+    str = (1..4).map { |e| "\\<Right>" }
+    @inserter.key_directions.should == "\\<Down>#{str}"
+  end
+end
+
+describe "an inserter handling an edge case " do
+  include VimSpecHelper
+  before(:each) do
+    stub_vim
+    @buffer = BufferStub.new("${1:tag\n} ${0}")
+    @mark   = "${1:tag\n}"
+    @inserter = Inserter.new(1, @mark, @buffer)
+    @inserter.remove_tags_from_buffer!
+  end
+
+  it "should insert the string correctly" do
+    @buffer[1].should == "tag"
+    @buffer[2].should == " ${0}"
+  end
+
+  it "should return the correct key-directions" do
+    @inserter.key_directions.should == "\\<Right>\\<Right>"
   end
 end
