@@ -32,7 +32,6 @@ class BufferManager
     @buffer = buffer
 
     @snippet_loader = SnippetLoader.new
-    @snippet_loader.load_snippets
 
     monkey_patch_buffer!
     @manipulators = [

@@ -1,4 +1,6 @@
 require 'snippet'
+require "rubygems"
+require "ruby-debug"
 
 # This class is responsible for loading all sorts of snippets and grouping them
 # per filetype.
@@ -17,11 +19,16 @@ class SnippetLoader
   # The method modifies the @snippets-hash and includes all snippets.
   # Before loading the snippets the @snippets-hash is cleared, so you might use
   # this method to reaload all snippets.
+  #
+  # ==== Parameters
+  # type<String>::
+  #   The filetype which should be loaded by snip-fu. If the type is nil all
+  #   snippets will be loaded.
   # ---
   # @public
-  def load_snippets
+  def load_snippets(type=nil)
     @snippets = new_snippet_hash
-    files.each do |file|
+    files(type).each do |file|
       parse_file(file) rescue nil
     end
   end
@@ -38,6 +45,7 @@ class SnippetLoader
   # ---
   # @public
   def [](key)
+    load_snippets(key) if @snippets[key].empty?
     @snippets[key]
   end
 
@@ -86,11 +94,18 @@ class SnippetLoader
 
   # Returns an array of all files in the snippet-directory
   #
+  # ==== Parameters
+  # type<String>::
+  #   The filetype which should be loaded by snip-fu. If the type is nil all
+  #   snippets will be loaded.
+  #
   # ==== Returns
   # Array<String>::
   #   A list of files is returned.
-  def files
-    Dir[snippet_directory + '/**/*.xml']
+  def files(type=nil)
+    type += '/**' if type
+    type ||= '**'
+    Dir[snippet_directory + "/#{type}/*.xml"]
   end
 
   # Returns a hash which returns on new keys an empty array

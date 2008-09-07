@@ -152,7 +152,7 @@ rubyf #{snip_fu_directory + '/vim-snippet.rb'}
     end
 
     def snip_fu_share
-    	File.dirname(__FILE__) + '/../../../share/.'
+    	File.dirname(__FILE__) + '/../../../share/snippets/.'
     end
 	end
 	

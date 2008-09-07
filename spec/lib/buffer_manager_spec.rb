@@ -277,15 +277,14 @@ end
 describe BufferManager, 'loading snippets' do
   before(:each) do
     @loader = mock("snippet loader")
-    @loader.stub!(:load_snippets)
     SnippetLoader.stub!(:new).and_return(@loader)
 
     @buffer = BufferStub.new("for ${1:key} in ${2:val}")
     @window = WindowStub.new(1, 1)
   end
   
-  it 'should load the snippets in the beginning' do
-    @loader.should_receive(:load_snippets)
+  it 'should lazy load the snippets in the beginning' do
+    @loader.should_not_receive(:load_snippets)
     @manager = BufferManager.new(@window, @buffer)
   end
 

@@ -105,6 +105,8 @@ end</command>
       Dir.stub!(:[]).with(
         ENV['HOME'] + '/.vim/snippets/**/*.xml'
       ).and_return([:file1, :file2, :file3])
+      Dir.stub!(:[]).with(ENV['HOME'] + '/.vim/snippets/ruby/**/*.xml').
+        and_return([])
       File.stub!(:open).with(:file1).and_yield(StringIO.new(for_snippet))
       File.stub!(:open).with(:file2).and_yield(StringIO.new(rb_def_snippet))
       File.stub!(:open).with(:file3).and_yield(StringIO.new(py_def_snippet))
@@ -132,7 +134,7 @@ end</command>
   describe 'current_snippets method' do
     before(:each) do
       stub_vim
-      Vim.stub!(:evaluate).and_return('ruby')
+      Vim.stub!(:evaluate).with('&filetype').and_return('ruby')
       @snippet_loader = SnippetLoader.new
       @snippet_loader.instance_variable_set(:@snippets, { 
         'ruby' => [ :ruby ] 
@@ -144,7 +146,7 @@ end</command>
     end
 
     it 'should call the correct vim command for getting the filetype' do
-      Vim.should_receive(:evaluate).with('&filetype')
+      Vim.should_receive(:evaluate).with('&filetype').and_return('ruby')
       @snippet_loader.current_snippets
     end
   end
