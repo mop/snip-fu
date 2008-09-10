@@ -1,6 +1,5 @@
 require 'snippet'
 require "rubygems"
-require "ruby-debug"
 
 # This class is responsible for loading all sorts of snippets and grouping them
 # per filetype.
