@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + '/manipulator_helper'
+require File.dirname(__FILE__) + '/../edited_checker'
 
 # This class is responsible for restoring the buffer if it wasn't edited by the
 # user. The VI-editor actually deletes our insertion after pressing <Tab> if
@@ -6,6 +7,7 @@ require File.dirname(__FILE__) + '/manipulator_helper'
 # wants to keep the default value.
 class RestoreManipulator
   include ManipulatorHelper
+  include EditedChecker
 
   # Manipulates the buffer with the given history object
   #

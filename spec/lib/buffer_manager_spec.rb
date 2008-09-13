@@ -47,6 +47,27 @@ describe BufferManager, 'snippet insertion' do
   end
 end
 
+describe BufferManager, 'snippet insertion in selection mode' do
+  include BufferManagerSpecHelper
+  before(:each) do
+    @buffer = BufferStub.new("for  in ${2:val}")
+    @window = WindowStub.new(1, 4)
+
+    @snippet = snippet_stub
+    @loader  = loader_stub([@snippet])
+
+    @manager = BufferManager.new(@window, @buffer)
+    @history = TagHistory.new("${1:key}", 1, 4)
+    @manager.instance_variable_set(:@history, @history)
+  end
+  
+  it "should not allow to insert snippets" do
+    @snippet.stub!(:pressed?).and_return(true)
+    @snipppet.should_not_receive(:handle_insert)
+    @manager.handle_insert
+  end
+end
+
 describe BufferManager, 'jump' do
   include VimSpecHelper
   include BufferManagerSpecHelper

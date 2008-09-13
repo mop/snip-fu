@@ -2,6 +2,7 @@ require 'inserter'
 require 'snippet'
 require 'snippet_loader'
 require 'mirrorer'
+require 'edited_checker'
 require 'buffer_util/buffer_util'
 
 require 'buffer_manipulators/restore_manipulator'
@@ -18,6 +19,7 @@ String.send(:include, GeditSnippetMatcher)
 # It is able to determine whether or not a current snippet should be inserted
 # and is able to jump to the next snippet in the buffer.
 class BufferManager
+  include EditedChecker
   attr_accessor :snippets, :buffer, :window
 
   # Initializes the Manager
@@ -99,6 +101,7 @@ class BufferManager
   # ---
   # @public
   def handle_insert
+    return unless previous_edited?
     snippet = @snippet_loader.current_snippets.find { |snip| snip.pressed? }
     if snippet
       snippet.insert_snippet 
