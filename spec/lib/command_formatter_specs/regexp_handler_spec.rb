@@ -136,4 +136,29 @@ describe RegexpHandler do
       ).replace
     end
   end
+  describe "newlines and tabs" do
+    it "should translate newlines correctly" do
+      RegexpHandler.new(
+        'SOMETHING SELECTED/^.*$/$0\n/'
+      ).replace.should eql("SOMETHING SELECTED\n")
+    end
+
+    it "should translate tabs correctly" do
+      RegexpHandler.new(
+        'SOMETHING SELECTED/^.*$/$0\t/g'
+      ).replace.should eql("SOMETHING SELECTED\t")
+    end
+
+    it "should escape newlines correctly" do
+      RegexpHandler.new(
+        'SOMETHING SELECTED/^.*$/$0\\\n/g'
+      ).replace.should eql("SOMETHING SELECTED\\n")
+    end
+
+    it "should escape tabs correctly" do
+      RegexpHandler.new(
+        'SOMETHING SELECTED/^.*$/$0\\\t/g'
+      ).replace.should eql('SOMETHING SELECTED\t')
+    end
+  end
 end

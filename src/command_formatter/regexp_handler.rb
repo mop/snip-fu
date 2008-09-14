@@ -23,12 +23,30 @@ class RegexpHandler
   #   The translated text is returned.
   def replace
     re = Oniguruma::ORegexp.new(regexp, options)
-    re.send(sub_method, text) do |match|
+    result = re.send(sub_method, text) do |match|
       fold_cases(replace_tags(apply_conditionals(match), match))
     end
+    translate_special_chars(result)
   end
 
   private
+
+  # Translates '\n' to "\n" and '\t' to "\t". Those strings might be escaped
+  # through '\\\n' and '\\\t' which will be translated to '\n' and '\t'.
+  #
+  # ==== Parameters 
+  # string<String>:: The string which should be translated
+  #
+  # ==== Returns
+  # String:: The translated string is returned.
+  def translate_special_chars(string)
+    string.
+      gsub(/([^\\])\\n/, "\\1\n").
+      gsub(/([^\\])\\t/, "\\1\t").
+      gsub('\\\n', '\n').
+      gsub('\\\t', '\t')
+  end
+
 
   # Returns the method for the given element.
   #
