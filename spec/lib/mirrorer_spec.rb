@@ -27,6 +27,14 @@ describe 'A Mirrorer' do
       buffer[1].should == 'some REPLACE thing'
     end
 	end
+
+  describe "with extended tags" do
+    it "should mirror correctly" do
+      buffer = BufferStub.new('some ${5:thing${1}} nested')
+      Mirrorer.new(buffer, '${1:key}', 'replace').mirror_tags!
+      buffer[1].should == 'some ${5:thingreplace} nested'
+    end
+  end
 end
 
 describe 'A Mirrorer with other tags' do

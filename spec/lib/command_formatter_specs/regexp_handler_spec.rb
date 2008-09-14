@@ -160,5 +160,11 @@ describe RegexpHandler do
         'SOMETHING SELECTED/^.*$/$0\\\t/g'
       ).replace.should eql('SOMETHING SELECTED\t')
     end
+
+    it "should replace single \\t's" do
+      RegexpHandler.new(
+        'something/.+/\t/g'
+      ).replace.should eql("\t")
+    end
   end
 end

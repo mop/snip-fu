@@ -40,11 +40,33 @@ class RegexpHandler
   # ==== Returns
   # String:: The translated string is returned.
   def translate_special_chars(string)
-    string.
-      gsub(/([^\\])\\n/, "\\1\n").
-      gsub(/([^\\])\\t/, "\\1\t").
-      gsub('\\\n', '\n').
-      gsub('\\\t', '\t')
+    result = ""
+    i = 0
+    while i < string.size
+      chunk, i = parse_chunk(string, i)
+      result += chunk
+    end
+    result
+  end
+
+  # This method parses a chunk of the given string.
+  #
+  # ==== Parameters
+  # string<String>:: The string which should be parsed for \t's and \n's.
+  # i<Fixnum>:: The position in the string at which the parser currently is.
+  #
+  # ==== Returns
+  # Array[String, i]:: 
+  #   A tuple is returned with the chunk parsed an the new parser-position
+  def parse_chunk(string, i)
+    case string[i, string.size]
+    when /^\\\\(t|n).*/
+      [ string[i + 1, 2], i + 4 ]
+    when /^\\(t|n).*/
+      [(string[i, 2] == '\t') ? "\t" : "\n", i + 2 ]
+    else
+      [ string[i].chr, i + 1 ]
+    end
   end
 
 

@@ -29,7 +29,7 @@ class Mirrorer
 
   private
   def reduce_buffer_tags
-    buffer.buffer_lines.scan_snippets.each do |snippet|
+    each_buffer_tag do |snippet|
       if mirror_tag?(snippet)
         line_number = buffer.to_line_number(snippet)
         line = buffer[line_number]
@@ -39,6 +39,37 @@ class Mirrorer
         buffer.insert_string(repl, [line_number, pos])
       end
     end
+  end
+
+  # Yields each tag within the buffer including nested tags.
+  #
+  # ==== Yields
+  # String:: The appropriate snippet will be yield
+  def each_buffer_tag(&block)
+  	tags = buffer.buffer_lines.scan_snippets
+    tags += nested_buffer_tags(tags)
+    tags.each do |snippet|
+    	yield snippet
+    end
+  end
+
+  # Creates recursively a list of snippet-tags in the given list of strings.
+  #
+  # ==== Parameters
+  # tags<Array[String]>:: A list of strings which are snippet-tags who will be
+  # recursively mapped and collected so that all nested tags are returned
+  #
+  # ==== Returns
+  # Array[String]:: A list of tags is returned
+  #
+  # ==== Example
+  #
+  # nested_buffer_tags(["${1:some${2}thing ${3:funny${4}}}"])
+  # # => [ "${2}", "${3:funny${4}}", "${4}" ]
+  def nested_buffer_tags(tags)
+    return [] if tags.empty?
+    nested = tags.map { |t| t.without_tags.scan_snippets }.flatten
+    nested + nested_buffer_tags(nested)
   end
 
   def regex_tag?(tag)
